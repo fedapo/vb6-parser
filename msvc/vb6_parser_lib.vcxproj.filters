@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ast_printers">
+      <UniqueIdentifier>{4db10dc1-bd75-48ec-a340-cd63bfe93a54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{5fc50242-d0ab-4904-a16b-20faa38be067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ast_printers">
+      <UniqueIdentifier>{58be8f26-3ece-4851-9850-256d9c32c62e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\parser">
+      <UniqueIdentifier>{017cf1f3-4296-4f1b-b845-08fbee14fac0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\cpp_ast_printer.cpp">
+      <Filter>Source Files\ast_printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\raw_ast_printer.cpp">
+      <Filter>Source Files\ast_printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vb6_ast_printer.cpp">
+      <Filter>Source Files\ast_printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vb6_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vb6_parser_functions.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vb6_parser_helper.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\vb6_parser_statements.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\cpp_ast_printer.hpp">
+      <Filter>Header Files\ast_printers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\raw_ast_printer.hpp">
+      <Filter>Header Files\ast_printers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_ast_printer.hpp">
+      <Filter>Header Files\ast_printers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_config.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_error_handler.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_parser.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_parser_def.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_parser_keywords.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_parser_operators.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_parser_statements_def.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\visual_basic_x3.hpp">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_ast.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vb6_ast_adapt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

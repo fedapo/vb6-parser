@@ -1,0 +1,89 @@
+AST ELEMENT                      GRAMMAR RULE
+----------------------------------------------------------------------
+empty_line                       empty_line
+lonely_comment                   lonely_comment
+quoted_string                    quoted_string
+var_identifier                   basic_identifier
+identifier_context               identifier_context
+type_identifier
+
+vb6_ast::variable                vb6_grammar::single_var_declaration
+decorated_variable               decorated_variable
+vb6_ast::global_var_decls        vb6_grammar::global_var_declaration
+integer_dec
+integer_hex
+integer_oct
+long_dec
+long_hex
+long_oct
+vb6_ast::const_expr              vb6_grammar::const_expression
+vb6_ast::const_var
+vb6_ast::const_var_stat          vb6_grammar::const_var_declaration
+vb6_ast::record                  vb6_grammar::record_declaration
+vb6_ast::enum_item
+vb6_ast::vb_enum                 vb6_grammar::enum_declaration
+expression                       expression
+func_call                        functionCall
+vb6_ast::func_param              vb6_grammar::param_decl
+vb6_ast::external_decl           vb6_grammar::
+vb6_ast::subHead                 vb6_grammar::subHead
+eventHead                        vb6_grammar::eventHead
+vb6_ast::functionHead            vb6_grammar::functionHead
+propertyLetHead                  vb6_grammar::property_letHead
+propertySetHead                  vb6_grammar::property_setHead
+propertyGetHead                  vb6_grammar::property_getHead
+vb6_ast::externalSub             vb6_grammar::external_sub_decl
+vb6_ast::externalFunction        vb6_grammar::external_function_decl
+
+vb6_ast::assignStatement         vb6_grammar::
+localVarDeclStat                 localvardeclStatement
+redimStatement                   redimStatement
+exitStatement                    exitStatement
+gotoStatement                    gotoStatement
+onerrorStatement                 onerrorStatement
+resumeStatement                  resumeStatement
+labelStatement                   labelStatement
+callStatement                    callimplicitStatement
+callStatement                    callexplicitStatement
+raiseeventStatement              raiseeventStatement
+
+vb6_ast::whileStatement          vb6_grammar::whileStatement
+vb6_ast::doStatement             vb6_grammar::doStatement
+vb6_ast::dowhileStatement        vb6_grammar::dowhileStatement
+vb6_ast::loopwhileStatement      vb6_grammar::loopwhileStatement
+vb6_ast::dountilStatement        vb6_grammar::dountilStatement
+vb6_ast::loopuntilStatement      vb6_grammar::loopuntilStatement
+
+vb6_ast::forStatement            vb6_grammar::forStatement
+vb6_ast::foreachStatement        vb6_grammar::foreachStatement
+if_branch
+vb6_ast::ifelseStatement         vb6_grammar::ifelseStatement
+vb6_ast::withStatement           vb6_grammar::withStatement
+case_relational_expr
+case_block                       case_block
+vb6_ast::selectStatement         vb6_grammar::selectStatement
+
+vb6_ast::if_branch               ifBranch
+vb6_ast::if_branch               elsifBranch
+vb6_ast::statement_block         elseBranch
+
+vb6_ast::singleStatement         vb6_grammar::singleStatement
+vb6_ast::statement_block         vb6_grammar::statement_block
+
+vb6_ast::subDef                  vb6_grammar::subDef
+vb6_ast::functionDef             vb6_grammar::functionDef
+vb6_ast::get_prop                vb6_grammar::
+vb6_ast::let_prop                vb6_grammar::
+vb6_ast::set_prop                vb6_grammar::
+
+STRICT_MODULE_STRUCTURE
+  module_attributes
+  option_block
+  declaration
+  functionList
+  vb_module
+
+#vb6_ast::decl_item              vb6_grammar::declaration
+vb6_ast::declaration             vb6_grammar::declaration
+module_attribute
+vb6_ast::vb_module
