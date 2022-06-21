@@ -11,17 +11,22 @@
 int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
-
-  // --gtest_filter = Test_Cases1*
-  // --gtest_repeat = 1000
-  // --gtest_break_on_failure
-  // --gtest_shuffle
-  // --gtest_random_seed=SEED
-  // --gtest_color=no
-  // --gtest_print_time=0
-  // --gtest_print_utf8=0
-  // --gtest_output=xml:path_to_output_file
-  // --gtest_output=json:path_to_output_file
+/*
+  --gtest_list_tests
+  --gtest_filter=POSITIVE_PATTERNS[-NEGATIVE_PATTERNS]
+  --gtest_also_run_disabled_tests
+  --gtest_repeat=[COUNT]
+  --gtest_shuffle
+  --gtest_random_seed=[NUMBER]
+  --gtest_color=(yes|no|auto)
+  --gtest_brief=1
+  --gtest_print_time=0
+  --gtest_output=(json|xml)[:DIRECTORY_PATH/|:FILE_PATH]
+  --gtest_death_test_style=(fast|threadsafe)
+  --gtest_break_on_failure
+  --gtest_throw_on_failure
+  --gtest_catch_exceptions=0
+*/
   //::test::GTEST_FLAG(list_tests) = true;
   //::testing::GTEST_FLAG(filter) = "*empty_lines*";
 

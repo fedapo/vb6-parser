@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 
 project(vb6_parser)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 #------------------------------------------------------------------------------
 # see https://google.github.io/googletest/quickstart-cmake.html
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+  URL https://github.com/google/googletest/archive/7df7853ea02371f6d24ccf4a0cf9e16553d23d05.zip
 )
 # for Windows: prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -18,9 +18,8 @@ FetchContent_MakeAvailable(googletest)
 
 add_compile_options($<$<CXX_COMPILER_ID:GNU,Clang>:-Wall> $<$<CXX_COMPILER_ID:GNU,Clang>:-Wextra>)
 
-enable_testing()
-
 #find_package(GTest CONFIG REQUIRED) # GoogleTest with vcpkg
+find_package(ut CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED QUIET COMPONENTS system)
 
@@ -55,6 +54,11 @@ PRIVATE
   -DBOOST_MPL_LIMIT_LIST_SIZE=30
 )
 
+target_link_libraries(vb6_parser_lib
+PRIVATE
+  Boost::system
+)
+
 add_executable(vb6_parser
   src/vb6_parser_main.cpp
   src/vb6_test1.cpp
@@ -76,9 +80,30 @@ PRIVATE
 
 # ---- test
 
+add_executable(vb6_parser.ut
+  #src/test_gosub.cpp
+  #src/test_grammar_helper_gtest.hpp
+  #src/vb6_parser_statements_test.cpp
+  src/vb6_parser.ut.cpp
+)
+
+target_compile_definitions(vb6_parser.ut
+PRIVATE
+  -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+  -DBOOST_MPL_LIMIT_LIST_SIZE=30
+)
+
+target_link_libraries(vb6_parser.ut
+PRIVATE
+  vb6_parser_lib
+  Boost::ut
+  Boost::system
+  Threads::Threads
+)
+
 add_executable(vb6_parser_test
   src/test_gosub.cpp
-  src/test_grammar_helper.hpp
+  src/test_grammar_helper_gtest.hpp
   src/vb6_parser_statements_test.cpp
   src/vb6_parser_test.cpp
   src/vb6_parser_test_main.cpp
@@ -97,6 +122,7 @@ PRIVATE
   Boost::system
   Threads::Threads
 )
+
 #[[
 # GoogleTest with vcpkg, probably not a good idea
 target_link_libraries(vb6_parser_test
@@ -111,6 +137,12 @@ PRIVATE
 )
 #]]
 
+set_target_properties(vb6_parser.ut PROPERTIES EXCLUDE_FROM_ALL 1)
+
+include(CTest)
+#enable_testing()
+
 include(GoogleTest)
 gtest_discover_tests(vb6_parser_test)
-#add_test(AllTestsInMain vb6_parser_test)
+
+add_test(AllTestsInMain vb6_parser_test)

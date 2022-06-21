@@ -6,7 +6,7 @@
 
 //#define BOOST_SPIRIT_X3_DEBUG
 
-#include "test_grammar_helper.hpp"
+#include "test_grammar_helper_gtest.hpp"
 #include "vb6_parser.hpp"
 
 #include <gtest/gtest.h>
@@ -178,7 +178,7 @@ GTEST_TEST(vb6_parser_statements, Call_explicit)
   EXPECT_EQ(st.sub_name, "Foo");
   EXPECT_EQ(st.params.size(), 1);
 
-  test_grammar_false("Call Foo 13\r\n", vb6_grammar::statements::callexplicitStmt, st);
+  test_grammar("Call Foo 13\r\n", vb6_grammar::statements::callexplicitStmt, st, false);
 }
 
 GTEST_TEST(vb6_parser_statements, Call_implicit)

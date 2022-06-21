@@ -9,8 +9,6 @@
 #include "color_console.hpp"
 #include "vb6_config.hpp"
 
-#include <gtest/gtest.h>
-
 #include <boost/spirit/home/x3.hpp>
 
 #include <iostream>
@@ -64,53 +62,4 @@ void test_grammar(std::ostream& os, std::string_view testName, ruleType rule,
   {
     os << tag_fail << " - " << e.what() << " - " << (e.where() - it1) << " - " << e.which() << '\n';
   }
-}
-
-template <class ruleType, class attrType>
-void test_grammar(std::string_view fragment, ruleType rule, attrType& attr)
-{
-  namespace x3 = boost::spirit::x3;
-
-  auto it1 = cbegin(fragment);
-  auto const it2 = cend(fragment);
-
-  std::stringstream out;
-
-  vb6_grammar::error_handler_type error_handler(it1, it2, out, "source.bas");
-
-  auto const parser =
-    // we pass our error handler to the parser so we can access
-    // it later on in our on_error and on_success handlers
-    x3::with<vb6_grammar::vb6_error_handler_tag>(std::ref(error_handler))
-    [
-      rule
-    ];
-
-  ASSERT_TRUE(x3::phrase_parse(it1, it2, parser, vb6_grammar::skip, attr))
-    << "stopped at: " << std::string(it1, it2);
-
-  EXPECT_EQ(it1, it2);
-}
-
-template <class ruleType, class attrType>
-void test_grammar_false(std::string_view fragment, ruleType rule, attrType& attr)
-{
-  namespace x3 = boost::spirit::x3;
-
-  auto it1 = cbegin(fragment);
-  auto const it2 = cend(fragment);
-
-  std::stringstream out;
-
-  vb6_grammar::error_handler_type error_handler(it1, it2, out, "source.bas");
-
-  auto const parser =
-    // we pass our error handler to the parser so we can access
-    // it later on in our on_error and on_success handlers
-    x3::with<vb6_grammar::vb6_error_handler_tag>(std::ref(error_handler))
-    [
-      rule
-    ];
-
-  ASSERT_FALSE(x3::phrase_parse(it1, it2, parser, vb6_grammar::skip, attr));
 }
