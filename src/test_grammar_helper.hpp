@@ -12,7 +12,7 @@
 #include <boost/spirit/home/x3.hpp>
 
 #include <iostream>
-#include <string>
+#include <sstream>
 #include <string_view>
 
 template <class ruleType, class attrType>
@@ -53,10 +53,10 @@ void test_grammar(std::ostream& os, std::string_view testName, ruleType rule,
     {
       os << tag_ok << '\n';
       if(it1 != it2)
-        os << "  but we stopped at " << std::string(it1, it2) << '\n';
+        os << "  but we stopped at " << std::string_view(it1, it2) << '\n';
     }
     else
-      os << tag_fail << " - stopped at: " << std::string(it1, it2) << '\n';
+      os << tag_fail << " - stopped at: " << std::string_view(it1, it2) << '\n';
   }
   catch(x3::expectation_failure<decltype(it1)>& e)
   {

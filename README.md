@@ -1,6 +1,6 @@
 # vb6-parser
 
-A parsing engine for Microsoft's Visual Basic 6 programming language based on the Boost.Spirit library.
+A parsing engine for Microsoft's Visual Basic 6 programming language based on the Boost.Spirit X3 library.
 
 ## Introduction
 
@@ -10,10 +10,9 @@ https://github.com/fedapo/vb6-parser.git
 
 ## Building with CMake
 
-```shell
-> mkdir build
-> cmake . -B build/
-> cmake --build build/
+```sh
+cmake -B build
+cmake --build build
 ```
 
 ## Building with Microsoft Visual Studio
@@ -22,10 +21,12 @@ Open the file `vb_parser.sln` with Microsoft Visual Studio. Build all.
 
 ## Usage
 
-The project produces a library, vb_parser_lib, used for the moment only by two executables.
+The project produces a library, vb_parser_lib, used by these executables.
 
-- vb6_parser
-- vb6_parser_test
+- `vb6_parser`
+- `vb6_parser.doctest`
+- `vb6_parser.gtest`
+- `vb6_parser.ut`
 
 These run a series of tests to ensure the parser runs correctly.
 
@@ -37,6 +38,8 @@ These run a series of tests to ensure the parser runs correctly.
 
 - Boost Spirit X3
 - GTest
+- Doctest
+- Boost.UT
 - CMake
 - GCC
 - Clang

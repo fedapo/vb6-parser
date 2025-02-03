@@ -21,6 +21,9 @@ BASIC = Beginner's All-purpose Symbolic Instruction Code
 Visual Basic 6 Renewed to Run on Windows 8 \
 https://www.infoq.com/news/2012/02/vb6_supported_on_win8
 
+https://www.indiegogo.com/projects/a-replacement-to-visual-basic-6-ide-and-compiler#/
+https://www.codeproject.com/Articles/710181/Visual-Basic-6-0-A-giant-more-powerful-than-ever
+
 ---
 ## Complete VB6 Grammars
 

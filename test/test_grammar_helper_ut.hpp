@@ -1,4 +1,4 @@
-//: test_grammar_helper.hpp
+//: test_grammar_ut.hpp
 
 // vb6_parser
 // Copyright (c) 2022 Federico Aponte
@@ -9,16 +9,14 @@
 #include "color_console.hpp"
 #include "vb6_config.hpp"
 
-#include <gtest/gtest.h>
-
 #include <boost/spirit/home/x3.hpp>
 
 #include <iostream>
-#include <string>
 #include <string_view>
+#include <utility>
 
 template <class ruleType, class attrType>
-void test_grammar(std::string_view fragment, ruleType rule, attrType& attr, bool expected = true)
+std::pair<bool, std::string_view> test_grammar(std::string_view fragment, ruleType rule, attrType& attr)
 {
   namespace x3 = boost::spirit::x3;
 
@@ -37,8 +35,7 @@ void test_grammar(std::string_view fragment, ruleType rule, attrType& attr, bool
       rule
     ];
 
-  ASSERT_TRUE(x3::phrase_parse(it1, it2, parser, vb6_grammar::skip, attr) == expected)
-    << "stopped at: " << std::string(it1, it2);
+  bool res = x3::phrase_parse(it1, it2, parser, vb6_grammar::skip, attr);
 
-  EXPECT_EQ(it1, it2);
+  return std::make_pair(res, std::string_view(it1, it2));
 }

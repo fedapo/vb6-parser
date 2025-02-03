@@ -6,7 +6,7 @@
 
 //#define BOOST_SPIRIT_X3_DEBUG
 
-#include "test_grammar_helper_gtest.hpp"
+#include "test_grammar_helper_ut.hpp"
 #include "vb6_parser.hpp"
 
 #include <gtest/gtest.h>
@@ -21,7 +21,9 @@ namespace x3 = boost::spirit::x3;
 GTEST_TEST(vb6_parser_statements, Assignment_0)
 {
   vb6_ast::statements::assignStmt st;
-  test_grammar("Set var1 = \"  ciao\"\r\n", vb6_grammar::statements::assignmentStmt, st);
+  auto [res, sv] = test_grammar("Set var1 = \"  ciao\"\r\n", vb6_grammar::statements::assignmentStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::assignmentType::set);
   EXPECT_EQ(st.var.var, "var1");
@@ -35,7 +37,9 @@ GTEST_TEST(vb6_parser_statements, Assignment_0)
 GTEST_TEST(vb6_parser_statements, Assignment_1)
 {
   vb6_ast::statements::assignStmt st;
-  test_grammar("Let var2 = 54.7\r\n", vb6_grammar::statements::assignmentStmt, st);
+  auto [res, sv] = test_grammar("Let var2 = 54.7\r\n", vb6_grammar::statements::assignmentStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::assignmentType::let);
   EXPECT_EQ(st.var.var, "var2");
@@ -49,7 +53,9 @@ GTEST_TEST(vb6_parser_statements, Assignment_1)
 GTEST_TEST(vb6_parser_statements, Assignment_2)
 {
   vb6_ast::statements::assignStmt st;
-  test_grammar("var3 = Func(\"descr\", 54.7)\r\n", vb6_grammar::statements::assignmentStmt, st);
+  auto [res, sv] = test_grammar("var3 = Func(\"descr\", 54.7)\r\n", vb6_grammar::statements::assignmentStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::assignmentType::na);
   EXPECT_EQ(st.var.var, "var3");
@@ -64,7 +70,9 @@ GTEST_TEST(vb6_parser_statements, Assignment_2)
 GTEST_TEST(vb6_parser_statements, Assignment_3)
 {
   vb6_ast::statements::assignStmt st;
-  test_grammar("str = CStr(i)\r\n", vb6_grammar::statements::assignmentStmt, st);
+  auto [res, sv] = test_grammar("str = CStr(i)\r\n", vb6_grammar::statements::assignmentStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::assignmentType::na);
   EXPECT_EQ(st.var.var, "str");
@@ -75,7 +83,9 @@ GTEST_TEST(vb6_parser_statements, Assignment_3)
 GTEST_TEST(vb6_parser_statements, LocalVarDecl_1)
 {
   vb6_ast::statements::localVarDeclStmt st;
-  test_grammar("Dim var As New Form\r\n", vb6_grammar::statements::localvardeclStmt, st);
+  auto [res, sv] = test_grammar("Dim var As New Form\r\n", vb6_grammar::statements::localvardeclStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::localvardeclType::Dim);
 
@@ -90,7 +100,9 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_1)
 GTEST_TEST(vb6_parser_statements, LocalVarDecl_2)
 {
   vb6_ast::statements::localVarDeclStmt st;
-  test_grammar("Static var1 As String, var2 As Integer\r\n", vb6_grammar::statements::localvardeclStmt, st);
+  auto [res, sv] = test_grammar("Static var1 As String, var2 As Integer\r\n", vb6_grammar::statements::localvardeclStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::localvardeclType::Static);
 
@@ -110,8 +122,11 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_2)
 GTEST_TEST(vb6_parser_statements, ReDim)
 {
   vb6_ast::statements::redimStmt st;
-  test_grammar("ReDim var1(15)\r\n", vb6_grammar::statements::redimStmt, st);
-  //test_grammar("ReDim var1(2*L + 1)\r\n", vb6_grammar::statements::redimStmt, st);
+  auto [res, sv] = test_grammar("ReDim var1(15)\r\n", vb6_grammar::statements::redimStmt, st);
+  //auto [res, sv] = test_grammar("ReDim var1(2*L + 1)\r\n", vb6_grammar::statements::redimStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   EXPECT_FALSE(st.preserve);
   EXPECT_EQ(st.var.var, "var1");
 }
@@ -119,7 +134,9 @@ GTEST_TEST(vb6_parser_statements, ReDim)
 GTEST_TEST(vb6_parser_statements, Exit)
 {
   vb6_ast::statements::exitStmt st;
-  test_grammar("Exit Function\r\n", vb6_grammar::statements::exitStmt, st);
+  auto [res, sv] = test_grammar("Exit Function\r\n", vb6_grammar::statements::exitStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::exit_type::function);
 }
@@ -127,7 +144,9 @@ GTEST_TEST(vb6_parser_statements, Exit)
 GTEST_TEST(vb6_parser_statements, GoTo)
 {
   vb6_ast::statements::gotoStmt st;
-  test_grammar("GoSub label1\r\n", vb6_grammar::statements::gotoStmt, st);
+  auto [res, sv] = test_grammar("GoSub label1\r\n", vb6_grammar::statements::gotoStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::gotoType::gosub_v);
   EXPECT_EQ(st.label, "label1");
@@ -136,7 +155,9 @@ GTEST_TEST(vb6_parser_statements, GoTo)
 GTEST_TEST(vb6_parser_statements, OnError)
 {
   vb6_ast::statements::onerrorStmt st;
-  test_grammar("On Error Resume Next\r\n", vb6_grammar::statements::onerrorStmt, st);
+  auto [res, sv] = test_grammar("On Error Resume Next\r\n", vb6_grammar::statements::onerrorStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.type, vb6_ast::onerror_type::resume_next);
   EXPECT_TRUE(st.label.empty());
@@ -146,25 +167,40 @@ GTEST_TEST(vb6_parser_statements, Resume)
 {
   vb6_ast::statements::resumeStmt st;
 
-  test_grammar("Resume\r\n", vb6_grammar::statements::resumeStmt, st);
-  EXPECT_EQ(st.type, vb6_ast::resume_type::implicit);
-
-  test_grammar("Resume Next\r\n", vb6_grammar::statements::resumeStmt, st);
-  EXPECT_EQ(st.type, vb6_ast::resume_type::next);
-
-  test_grammar("Resume 0\r\n", vb6_grammar::statements::resumeStmt, st);
-  EXPECT_EQ(st.type, vb6_ast::resume_type::line_nr);
-  EXPECT_EQ(boost::get<int>(st.label_or_line_nr), 0);
-
-  test_grammar("Resume resume_point\r\n", vb6_grammar::statements::resumeStmt, st);
-  EXPECT_EQ(st.type, vb6_ast::resume_type::label);
-  EXPECT_EQ(boost::get<string>(st.label_or_line_nr), "resume_point");
+  {
+    auto [res, sv] = test_grammar("Resume\r\n", vb6_grammar::statements::resumeStmt, st);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+    EXPECT_EQ(st.type, vb6_ast::resume_type::implicit);
+  }
+  {
+    auto [res, sv] = test_grammar("Resume Next\r\n", vb6_grammar::statements::resumeStmt, st);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+    EXPECT_EQ(st.type, vb6_ast::resume_type::next);
+  }
+  {
+    auto [res, sv] = test_grammar("Resume 0\r\n", vb6_grammar::statements::resumeStmt, st);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+    EXPECT_EQ(st.type, vb6_ast::resume_type::line_nr);
+    EXPECT_EQ(boost::get<int>(st.label_or_line_nr), 0);
+  }
+  {
+    auto [res, sv] = test_grammar("Resume resume_point\r\n", vb6_grammar::statements::resumeStmt, st);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+    EXPECT_EQ(st.type, vb6_ast::resume_type::label);
+    EXPECT_EQ(boost::get<string>(st.label_or_line_nr), "resume_point");
+  }
 }
 
 GTEST_TEST(vb6_parser_statements, Label)
 {
   vb6_ast::statements::labelStmt st;
-  test_grammar("label1:\r\n", vb6_grammar::statements::labelStmt, st);
+  auto [res, sv] = test_grammar("label1:\r\n", vb6_grammar::statements::labelStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(st.label, "label1");
 }
@@ -172,19 +208,27 @@ GTEST_TEST(vb6_parser_statements, Label)
 GTEST_TEST(vb6_parser_statements, Call_explicit)
 {
   vb6_ast::statements::callStmt st;
-  test_grammar("Call Foo(13)\r\n", vb6_grammar::statements::callexplicitStmt, st);
+  auto [res, sv] = test_grammar("Call Foo(13)\r\n", vb6_grammar::statements::callexplicitStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_TRUE(st.explicit_call);
   EXPECT_EQ(st.sub_name, "Foo");
   EXPECT_EQ(st.params.size(), 1);
 
-  test_grammar("Call Foo 13\r\n", vb6_grammar::statements::callexplicitStmt, st, false);
+  {
+    auto [res, sv] = test_grammar("Call Foo 13\r\n", vb6_grammar::statements::callexplicitStmt, st);
+    ASSERT_FALSE(res) << "stopped at: " << sv;
+    //EXPECT_TRUE(sv.empty());
+  }
 }
 
 GTEST_TEST(vb6_parser_statements, Call_implicit)
 {
   vb6_ast::statements::callStmt st;
-  test_grammar("Foo \"Sea\", Nothing, False\r\n", vb6_grammar::statements::callimplicitStmt, st);
+  auto [res, sv] = test_grammar("Foo \"Sea\", Nothing, False\r\n", vb6_grammar::statements::callimplicitStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_FALSE(st.explicit_call);
   EXPECT_EQ(st.sub_name, "Foo");
@@ -194,14 +238,16 @@ GTEST_TEST(vb6_parser_statements, Call_implicit)
 GTEST_TEST(vb6_parser_statements, RaiseEvent)
 {
   vb6_ast::statements::raiseeventStmt st;
-  test_grammar("RaiseEvent OnChange(\"hi!\")\r\n",
+  auto [res, sv] = test_grammar("RaiseEvent OnChange(\"hi!\")\r\n",
                vb6_grammar::statements::raiseeventStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 }
 
 GTEST_TEST(vb6_parser_statements, statement_block)
 {
   vb6_ast::statements::statement_block st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Set var1 = "  ciao"
          Let var2 = 54.7
          var3 = Func("descr", 54.7)
@@ -218,8 +264,10 @@ GTEST_TEST(vb6_parser_statements, statement_block)
          Foo "Sea", Nothing, False
          RaiseEvent OnChange("hi!")
       )vb", vb6_grammar::statements::statement_block, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(st.size(), 15);
+  ASSERT_EQ(st.size(), 15);
   EXPECT_EQ(st[0].get().type(), typeid(vb6_ast::statements::assignStmt));
   EXPECT_EQ(st[1].get().type(), typeid(vb6_ast::statements::assignStmt));
   EXPECT_EQ(st[2].get().type(), typeid(vb6_ast::statements::assignStmt));
@@ -240,12 +288,14 @@ GTEST_TEST(vb6_parser_statements, statement_block)
 GTEST_TEST(vb6_parser_compound_statements, With)
 {
   vb6_ast::statements::withStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(With obj
                'Call Module1.foo(True, .Name)
                Call foo(True, .Name)
            End With
       )vb", vb6_grammar::statements::withStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   EXPECT_FALSE(st.with_variable.ctx.leading_dot);
   EXPECT_TRUE(st.with_variable.ctx.elements.empty());
@@ -256,12 +306,15 @@ GTEST_TEST(vb6_parser_compound_statements, With)
 GTEST_TEST(vb6_parser_compound_statements, While)
 {
   vb6_ast::statements::whileStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(While cond(34, i)
            Print str
          Wend
         )vb",
     vb6_grammar::statements::whileStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
@@ -271,24 +324,30 @@ GTEST_TEST(vb6_parser_compound_statements, While)
 GTEST_TEST(vb6_parser_compound_statements, Do)
 {
   vb6_ast::statements::doStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Do
            Print str
          Loop
         )vb",
     vb6_grammar::statements::doStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   EXPECT_EQ(st.block.size(), 1);
 }
 
 GTEST_TEST(vb6_parser_compound_statements, DoWhile)
 {
   vb6_ast::statements::dowhileStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Do While cond(34, i)
            Print str
          Loop
         )vb",
     vb6_grammar::statements::dowhileStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
@@ -298,12 +357,15 @@ GTEST_TEST(vb6_parser_compound_statements, DoWhile)
 GTEST_TEST(vb6_parser_compound_statements, LoopWhile)
 {
   vb6_ast::statements::loopwhileStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Do
            Print str
          Loop While cond(34, i)
         )vb",
     vb6_grammar::statements::loopwhileStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
@@ -313,12 +375,15 @@ GTEST_TEST(vb6_parser_compound_statements, LoopWhile)
 GTEST_TEST(vb6_parser_compound_statements, DoUntil)
 {
   vb6_ast::statements::dountilStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Do Until cond(34, i)
            Print str
          Loop
         )vb",
     vb6_grammar::statements::dountilStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
@@ -328,12 +393,15 @@ GTEST_TEST(vb6_parser_compound_statements, DoUntil)
 GTEST_TEST(vb6_parser_compound_statements, LoopUntil)
 {
   vb6_ast::statements::loopuntilStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Do
            Print str
          Loop Until cond(34, i)
         )vb",
     vb6_grammar::statements::loopuntilStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
@@ -343,7 +411,7 @@ GTEST_TEST(vb6_parser_compound_statements, LoopUntil)
 GTEST_TEST(vb6_parser_compound_statements, For)
 {
   vb6_ast::statements::forStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(For i = 1 To 100 Step 2
            Dim str As String
            str = CStr(i)
@@ -351,6 +419,9 @@ GTEST_TEST(vb6_parser_compound_statements, For)
          Next i
         )vb",
     vb6_grammar::statements::forStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   EXPECT_EQ(st.for_variable.var, "i");
   EXPECT_FALSE(st.for_variable.ctx.leading_dot);
   EXPECT_TRUE(st.for_variable.ctx.elements.empty());
@@ -369,12 +440,15 @@ GTEST_TEST(vb6_parser_compound_statements, For)
 GTEST_TEST(vb6_parser_compound_statements, ForEach)
 {
   vb6_ast::statements::foreachStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(For Each el In Items
            Call Print(el)
          Next el
         )vb",
     vb6_grammar::statements::foreachStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+
   EXPECT_EQ(st.for_variable.var, "el");
   EXPECT_FALSE(st.for_variable.ctx.leading_dot);
   EXPECT_TRUE(st.for_variable.ctx.elements.empty());
@@ -389,49 +463,59 @@ GTEST_TEST(vb6_parser_compound_statements, ForEach)
 
 GTEST_TEST(vb6_parser_compound_statements, IfElse_substatements)
 {
-  vb6_ast::statements::if_branch ast1;
-  test_grammar(
-    R"vb(If cond1 Then
-           Dim str As String
-           str = CStr(i)
-           Print str
-        )vb",
-    vb6_grammar::statements::ifBranch, ast1);
+  {
+    vb6_ast::statements::if_branch ast1;
+    auto [res, sv] = test_grammar(
+      R"vb(If cond1 Then
+            Dim str As String
+            str = CStr(i)
+            Print str
+          )vb",
+      vb6_grammar::statements::ifBranch, ast1);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition.get());
+    auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition.get());
 
-  EXPECT_EQ(tmp1.var, "cond1");
-  EXPECT_EQ(ast1.block.size(), 3);
+    EXPECT_EQ(tmp1.var, "cond1");
+    EXPECT_EQ(ast1.block.size(), 3);
+  }
+  {
+    vb6_ast::statements::if_branch ast2;
+    auto [res, sv] = test_grammar(
+      R"vb(ElseIf cond2 Then
+            Dim str As String
+            str = CStr(i)
+            Print str
+          )vb",
+      vb6_grammar::statements::elsifBranch, ast2);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-  vb6_ast::statements::if_branch ast2;
-  test_grammar(
-    R"vb(ElseIf cond2 Then
-           Dim str As String
-           str = CStr(i)
-           Print str
-        )vb",
-    vb6_grammar::statements::elsifBranch, ast2);
+    auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition.get());
 
-  auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition.get());
+    EXPECT_EQ(tmp2.var, "cond2");
+    EXPECT_EQ(ast2.block.size(), 3);
+  }
+  {
+    vb6_ast::statements::statement_block ast3;
+    auto [res, sv] = test_grammar(
+      R"vb(Else
+            Print str
+          'End If
+          )vb",
+      vb6_grammar::statements::elseBranch, ast3);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(tmp2.var, "cond2");
-  EXPECT_EQ(ast2.block.size(), 3);
-
-  vb6_ast::statements::statement_block ast3;
-  test_grammar(
-    R"vb(Else
-           Print str
-         'End If
-        )vb",
-    vb6_grammar::statements::elseBranch, ast3);
-
-  EXPECT_EQ(ast3.size(), 2);
+    EXPECT_EQ(ast3.size(), 2);
+  }
 }
 
 GTEST_TEST(vb6_parser_compound_statements, IfElse)
 {
   vb6_ast::statements::ifelseStmt ast;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(If cond1 Then
            Print "1"
          ElseIf cond2 Then
@@ -443,6 +527,8 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse)
          End If
         )vb",
     vb6_grammar::statements::ifelseStmt, ast);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
 #ifdef SIMPLE_IF_STATEMENT
   EXPECT_EQ(ast.first_branch.block.size(), 5);
@@ -471,7 +557,7 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse)
 GTEST_TEST(vb6_parser_compound_statements, Select)
 {
   vb6_ast::statements::selectStmt st;
-  test_grammar(
+  auto [res, sv] = test_grammar(
     R"vb(Select Case frm.Type
            Case 0
              Dim str As String
@@ -485,6 +571,8 @@ GTEST_TEST(vb6_parser_compound_statements, Select)
            '  Print "Default"
          End Select
       )vb", vb6_grammar::statements::selectStmt, st);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
 
   ASSERT_EQ(st.condition.get().type(), typeid(vb6_ast::decorated_variable));
   EXPECT_EQ(boost::get<vb6_ast::decorated_variable>(st.condition.get()).var, "Type");
