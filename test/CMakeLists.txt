@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.28)
-
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost CONFIG REQUIRED COMPONENTS system)
 find_package(doctest CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(ut CONFIG REQUIRED)
-find_package(Threads REQUIRED)
 
 add_executable(vb6_parser.ut
     vb6_parser.ut.cpp
@@ -13,9 +10,8 @@ add_executable(vb6_parser.ut
 target_link_libraries(vb6_parser.ut
 PRIVATE
     vb6_parser_lib
-    Boost::system
+    Boost::boost
     Boost::ut
-    Threads::Threads
 )
 
 # --------------------------------
@@ -27,15 +23,13 @@ add_executable(vb6_parser.doctest
 target_link_libraries(vb6_parser.doctest
 PRIVATE
     vb6_parser_lib
-    Boost::system
+    Boost::boost
     doctest::doctest
-    Threads::Threads
 )
 
 # --------------------------------
 
 add_executable(vb6_parser.gtest
-    test_gosub.cpp
     vb6_parser_statements.gtest.cpp
     vb6_parser.gtest.cpp
     vb6_parser_test_main.cpp
@@ -44,21 +38,18 @@ add_executable(vb6_parser.gtest
 target_link_libraries(vb6_parser.gtest
 PRIVATE
     vb6_parser_lib
+    Boost::boost
     GTest::gtest
-    GTest::gtest_main
-    GTest::gmock
-    GTest::gmock_main
-    Boost::system
-    Threads::Threads
 )
 
 # --------------------------------
 
 add_test(NAME vb6_parser.ut COMMAND vb6_parser.ut)
+set_tests_properties(vb6_parser.ut PROPERTIES LABELS "ut;add_test")
 
 include(GoogleTest)
-gtest_discover_tests(vb6_parser.gtest)
+gtest_discover_tests(vb6_parser.gtest TEST_PREFIX gtest: PROPERTIES LABELS "gtest" LABELS "discover_tests")
 
 #add_test(NAME vb6_parser.doctest COMMAND vb6_parser.doctest)
 include(doctest)
-doctest_discover_tests(vb6_parser.doctest)
+doctest_discover_tests(vb6_parser.doctest TEST_PREFIX doctest: PROPERTIES LABELS "doctest" LABELS "discover_tests")

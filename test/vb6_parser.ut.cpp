@@ -7,7 +7,7 @@
 //#define BOOST_SPIRIT_X3_DEBUG
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
-#include "test_grammar_helper_ut.hpp"
+#include "test_grammar_helper.hpp"
 #include "vb6_parser.hpp"
 #include "vb6_ast_printer.hpp"
 
@@ -39,7 +39,7 @@ void log_compiler_info(std::ostream& os)
 }
 
 ut::suite<"vb6_parser_simple"> _ = []
-{ 
+{
   ut::test("lonely_comment") = []
   {
     vector<vb6_ast::lonely_comment> ast;

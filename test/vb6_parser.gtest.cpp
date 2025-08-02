@@ -6,7 +6,7 @@
 
 //#define BOOST_SPIRIT_X3_DEBUG
 
-#include "test_grammar_helper_ut.hpp"
+#include "test_grammar_helper.hpp"
 #include "vb6_parser.hpp"
 #include "vb6_ast_printer.hpp"
 

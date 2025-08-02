@@ -4,6 +4,7 @@
     {
       "name": "default",
       "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
@@ -12,8 +13,7 @@
     {
       "name": "vcpkg",
       "inherits": "default",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build"
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     {
       "name": "clang",

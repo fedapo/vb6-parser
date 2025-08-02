@@ -1,4 +1,6 @@
-//
+// VB6 Parser
+// Copyright (c) 2018-2025 Federico Aponte
+// SPDX-License-Identifier:	GPL-3.0-only
 
 #include <csetjmp>
 #include <iostream>
