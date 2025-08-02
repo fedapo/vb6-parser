@@ -1,4 +1,6 @@
-# vb6-parser
+# VB6 Parser
+
+Copyright (c) Federico Aponte - See [License](https://github.com/fedapo/vb6-parser/blob/main/LICENSE).
 
 A parsing engine for Microsoft's Visual Basic 6 programming language based on the Boost.Spirit X3 library.
 

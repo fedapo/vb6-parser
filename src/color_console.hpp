@@ -1,8 +1,6 @@
-//: color_console.hpp
-
-// vb6_parser
-// Copyright (c) 2022 Federico Aponte
-// This code is licensed under GNU Software License (see LICENSE.txt for details)
+// VB6 Parser
+// Copyright (c) 2018-2025 Federico Aponte
+// SPDX-License-Identifier:	GPL-3.0-only
 
 #pragma once
 

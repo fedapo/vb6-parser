@@ -1,10 +1,6 @@
-//: vb6_parser_test.cpp
-
-// vb6_parser
-// Copyright (c) 2022 Federico Aponte
-// This code is licensed under GNU Software License (see LICENSE.txt for details)
-
-//#define BOOST_SPIRIT_X3_DEBUG
+// VB6 Parser
+// Copyright (c) 2018-2025 Federico Aponte
+// SPDX-License-Identifier:	GPL-3.0-only
 
 #include "test_grammar_helper.hpp"
 #include "vb6_parser.hpp"
