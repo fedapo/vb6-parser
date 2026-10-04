@@ -470,4 +470,4 @@ namespace vb6_grammar {
     , basModDef
   )
     //, propertyDef
- }
+}

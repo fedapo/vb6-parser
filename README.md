@@ -1,5 +1,7 @@
 # VB6 Parser
 
+[![Manual Build and Test](https://github.com/fedapo/vb6-parser/actions/workflows/manual-build.yaml/badge.svg)](https://github.com/fedapo/vb6-parser/actions/workflows/manual-build.yaml)
+
 Copyright (c) Federico Aponte - See [License](https://github.com/fedapo/vb6-parser/blob/main/LICENSE).
 
 A parsing engine for Microsoft's Visual Basic 6 programming language based on the Boost.Spirit X3 library.
@@ -14,6 +16,11 @@ https://github.com/fedapo/vb6-parser.git
 
 ```sh
 cmake -B build
+cmake --build build
+```
+
+```sh
+cmake --preset vcpkg
 cmake --build build
 ```
 
@@ -48,3 +55,12 @@ These run a series of tests to ensure the parser runs correctly.
 - MSYS2
 - Vcpkg
 - The C++ Committee
+
+## PEMDAS Order of operations
+
+- parenthesis
+- exponent
+- multiplication
+- division
+- addition
+- subtraction

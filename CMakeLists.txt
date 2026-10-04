@@ -1,14 +1,19 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.31)
 
-project(vb6_parser)
+project(vb6_parser VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 
-add_compile_options($<$<CXX_COMPILER_ID:GNU,Clang>:-Wall> $<$<CXX_COMPILER_ID:GNU,Clang>:-Wextra>)
+add_compile_options(
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall>
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wextra>
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wpedantic>
+)
 
-find_package(Boost CONFIG REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
 
 add_compile_definitions(
+    VB6_PARSER_VERSION="${CMAKE_PROJECT_VERSION}"
     BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
     BOOST_MPL_LIMIT_LIST_SIZE=30
     #BOOST_SPIRIT_X3_DEBUG
@@ -54,6 +59,5 @@ PRIVATE
 add_subdirectory(parser_client)
 
 include(CTest)
-#enable_testing()
 
 add_subdirectory(test)

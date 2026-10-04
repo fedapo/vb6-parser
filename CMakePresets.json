@@ -27,16 +27,15 @@
   "buildPresets": [
     {
       "name": "vcpkg",
-      "configurePreset": "vcpkg",
-      "jobs": 16
+      "configurePreset": "vcpkg"
     }
   ],
   "testPresets": [
     {
-      "name": "default",
+      "name": "vcpkg",
       "configurePreset": "vcpkg",
       "output": { "outputOnFailure": true },
-      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
     }
   ]
 }

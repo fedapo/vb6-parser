@@ -8,8 +8,6 @@
 #define VB6_GOSUB(sub) if(!setjmp(_gs)){goto sub;}
 #define VB6_RETURN longjmp(_gs,1)
 
-using namespace std;
-
 /*
 Sub foo()
     GoSub mysub1
@@ -28,7 +26,7 @@ End Sub
 #define RETURN longjmp(_gs,1)
 */
 
-void test_gosub(ostream& os)
+void test_gosub(std::ostream& os)
 {
   os << "---- begin " << __func__ << " ----\n";
 

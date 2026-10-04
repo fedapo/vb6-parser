@@ -54,9 +54,9 @@ namespace vb6_grammar {
 
   // statements
   namespace statements {
-#if 0
-    // FED ???? there seems to be a limit here
-    //          I cannot define this rule with more than 21 alternatives!
+    // NOTE: Older compilers had a limit here. The rule definition had to be
+    //       split into shorter ones with less that 21 alternatives.
+    //       This seems not to be a problem any more.
     auto const singleStmt_def = lonely_comment // critical to have this as the first element
                               | empty_line
                               | assignmentStmt
@@ -65,8 +65,9 @@ namespace vb6_grammar {
                               | exitStmt
                               | gotoStmt
                               | onerrorStmt
-                              //| resumeStmt
+                              | resumeStmt
                               | labelStmt
+                              | withStmt // must be before callImplicitStmt
                               | callimplicitStmt
                               | callexplicitStmt
                               | raiseeventStmt
@@ -77,41 +78,9 @@ namespace vb6_grammar {
                               | dountilStmt
                               | loopuntilStmt
                               | forStmt
-                              //| foreachStmt
+                              | foreachStmt
                               | ifelseStmt
-                              //| selectStmt
-                              | withStmt
-                              ;
-#else
-    auto const singleStmt1 = assignmentStmt
-                           | localvardeclStmt
-                           | redimStmt
-                           | exitStmt
-                           | gotoStmt
-                           | onerrorStmt
-                           | resumeStmt
-                           | labelStmt
-                           | callimplicitStmt
-                           | callexplicitStmt
-                           | raiseeventStmt
-                           ;
-    auto const singleStmt2 = whileStmt
-                           | doStmt
-                           | dowhileStmt
-                           | loopwhileStmt
-                           | dountilStmt
-                           | loopuntilStmt
-                           | forStmt
-                           | foreachStmt
-                           | ifelseStmt
-                           | selectStmt
-                           | withStmt
-                           ;
-    auto const singleStmt_def = lonely_comment // critical to have this as the first element
-                              | empty_line
-                              | singleStmt1
-                              | singleStmt2;
-#endif
+                              | selectStmt;
 
     auto const statement_block_def = *singleStmt;
 

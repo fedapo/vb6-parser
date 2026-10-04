@@ -19,5 +19,3 @@ std::ostream& operator<<(std::ostream&, color_manip c);
 
 std::ostream& tag_ok(std::ostream&);
 std::ostream& tag_fail(std::ostream&);
-
-void wait_key_pressed();

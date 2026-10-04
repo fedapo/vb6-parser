@@ -1,7 +1,7 @@
-find_package(Boost CONFIG REQUIRED COMPONENTS system)
-find_package(doctest CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
-find_package(ut CONFIG REQUIRED)
+find_package(Catch2 REQUIRED)
+find_package(doctest REQUIRED)
+find_package(GTest REQUIRED)
+find_package(ut REQUIRED)
 
 add_executable(vb6_parser.ut
     vb6_parser.ut.cpp
@@ -18,6 +18,7 @@ PRIVATE
 
 add_executable(vb6_parser.doctest
     vb6_parser.doctest.cpp
+    vb6_parser_statements.doctest.cpp
 )
 
 target_link_libraries(vb6_parser.doctest
@@ -29,9 +30,23 @@ PRIVATE
 
 # --------------------------------
 
+add_executable(vb6_parser.catch
+    vb6_parser.catch.cpp
+    vb6_parser_statements.catch.cpp
+)
+
+target_link_libraries(vb6_parser.catch
+PRIVATE
+    vb6_parser_lib
+    Boost::boost
+    Catch2::Catch2
+)
+
+# --------------------------------
+
 add_executable(vb6_parser.gtest
-    vb6_parser_statements.gtest.cpp
     vb6_parser.gtest.cpp
+    vb6_parser_statements.gtest.cpp
     vb6_parser_test_main.cpp
 )
 
@@ -53,3 +68,6 @@ gtest_discover_tests(vb6_parser.gtest TEST_PREFIX gtest: PROPERTIES LABELS "gtes
 #add_test(NAME vb6_parser.doctest COMMAND vb6_parser.doctest)
 include(doctest)
 doctest_discover_tests(vb6_parser.doctest TEST_PREFIX doctest: PROPERTIES LABELS "doctest" LABELS "discover_tests")
+
+include(Catch)
+catch_discover_tests(vb6_parser.catch TEST_PREFIX catch2: PROPERTIES LABELS "catch2" LABELS "discover_tests")

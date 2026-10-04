@@ -10,15 +10,13 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
-#include <map>
 #include <vector>
 
-using namespace std;
 namespace x3 = boost::spirit::x3;
 
 GTEST_TEST(vb6_parser_simple, lonely_comment)
 {
-  vector<vb6_ast::lonely_comment> ast;
+  std::vector<vb6_ast::lonely_comment> ast;
   auto [res, sv] = test_grammar(
     "' This is comment line 1\r\n' Comment line 2\r\n",
     *vb6_grammar::lonely_comment, ast);
@@ -33,7 +31,7 @@ GTEST_TEST(vb6_parser_simple, lonely_comment)
 
 GTEST_TEST(vb6_parser_simple, empty_lines)
 {
-  vector<
+  std::vector<
     boost::variant<vb6_ast::empty_line, vb6_ast::lonely_comment>
   > ast;
   // critical to have lonely_comment first in the parsing rule
@@ -54,7 +52,7 @@ GTEST_TEST(vb6_parser_simple, empty_lines)
 
 GTEST_TEST(vb6_parser_simple, quoted_string)
 {
-  string str;
+  std::string str;
   auto [res, sv] = test_grammar("\"Quoted string.\"", vb6_grammar::quoted_string, str);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -64,7 +62,7 @@ GTEST_TEST(vb6_parser_simple, quoted_string)
 
 GTEST_TEST(vb6_parser_simple, basic_identifier)
 {
-  string id;
+  std::string id;
   auto [res, sv] = test_grammar("iden_tifier", vb6_grammar::basic_identifier, id);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -75,7 +73,7 @@ GTEST_TEST(vb6_parser_simple, basic_identifier)
 GTEST_TEST(vb6_parser_simple, var_identifier)
 {
   {
-    string var;
+    std::string var;
     auto [res, sv] = test_grammar("g_logger", vb6_grammar::var_identifier, var);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -83,7 +81,7 @@ GTEST_TEST(vb6_parser_simple, var_identifier)
     EXPECT_EQ(var, "g_logger");
   }
   {
-    string var;
+    std::string var;
     auto [res, sv] = test_grammar("forth ", vb6_grammar::sub_identifier, var);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -91,7 +89,7 @@ GTEST_TEST(vb6_parser_simple, var_identifier)
     EXPECT_EQ(var, "forth");
   }
   {
-    string var;
+    std::string var;
     auto [res, sv] = test_grammar("subroutine ", vb6_grammar::sub_identifier, var);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -100,8 +98,8 @@ GTEST_TEST(vb6_parser_simple, var_identifier)
   }
 
   /*
-  string code = "sub ";
-  string_view code_sv = code;
+  std::string code = "sub ";
+  std::string_view code_sv = code;
   auto it1 = cbegin(code_sv);
   auto const it2 = cend(code_sv);
   ASSERT_FALSE(boost::spirit::x3::phrase_parse(it1, it2, vb6_grammar::sub_identifier, vb6_grammar::skip, var));
@@ -111,7 +109,7 @@ GTEST_TEST(vb6_parser_simple, var_identifier)
 
 GTEST_TEST(vb6_parser_simple, type_identifier)
 {
-  string type;
+  std::string type;
   auto [res, sv] = test_grammar("Long", vb6_grammar::type_identifier, type);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -121,7 +119,7 @@ GTEST_TEST(vb6_parser_simple, type_identifier)
 
 GTEST_TEST(vb6_parser_simple, complex_type_identifier)
 {
-  string type;
+  std::string type;
   auto [res, sv] = test_grammar("VB.Form", vb6_grammar::complex_type_identifier, type);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -132,10 +130,10 @@ GTEST_TEST(vb6_parser_simple, complex_type_identifier)
 GTEST_TEST(vb6_parser_simple, const_expression_non_numeric)
 {
   vb6_ast::const_expr ast;
-  string str;
+  std::string_view str;
 
   {
-    str = "\"una stringa\""s;
+    str = "\"una stringa\"";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -143,7 +141,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_non_numeric)
     EXPECT_EQ(boost::get<vb6_ast::quoted_string>(ast.get()), "una stringa");
   }
   {
-    str = "True"s;
+    str = "True";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -151,7 +149,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_non_numeric)
     EXPECT_EQ(boost::get<bool>(ast.get()), true);
   }
   {
-    str = "Nothing"s;
+    str = "Nothing";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -163,10 +161,10 @@ GTEST_TEST(vb6_parser_simple, const_expression_non_numeric)
 GTEST_TEST(vb6_parser_simple, const_expression_integers)
 {
   vb6_ast::const_expr ast;
-  string str;
+  std::string_view str;
 
   {
-    str = "1234%"s;
+    str = "1234%";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -174,7 +172,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_integers)
     EXPECT_EQ(boost::get<vb6_ast::integer_dec>(ast.get()).val, 1234);
   }
   {
-    str = "1234&"s;
+    str = "1234&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -182,7 +180,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_integers)
     EXPECT_EQ(boost::get<vb6_ast::long_dec>(ast.get()).val, 1234);
   }
   {
-    str = "&Hcafedead&"s;
+    str = "&Hcafedead&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -190,7 +188,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_integers)
     EXPECT_EQ(boost::get<vb6_ast::long_hex>(ast.get()).val, 0xcafedead);
   }
   {
-    str = "&01234&"s;
+    str = "&01234&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -198,7 +196,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_integers)
     EXPECT_EQ(boost::get<vb6_ast::long_oct>(ast.get()).val, 01234);
   }
   {
-    str = "1234"s;
+    str = "1234";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -210,10 +208,10 @@ GTEST_TEST(vb6_parser_simple, const_expression_integers)
 GTEST_TEST(vb6_parser_simple, const_expression_floats)
 {
   vb6_ast::const_expr ast;
-  string str;
+  std::string_view str;
 
   {
-    str = "1234!"s;
+    str = "1234!";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -221,7 +219,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_floats)
     EXPECT_EQ(boost::get<float>(ast.get()), 1234.0f);
   }
   {
-    str = "1234#"s;
+    str = "1234#";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -229,7 +227,7 @@ GTEST_TEST(vb6_parser_simple, const_expression_floats)
     EXPECT_EQ(boost::get<double>(ast.get()), 1234.0);
   }
   {
-    str = "2.8"s;
+    str = "2.8";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
@@ -331,7 +329,7 @@ GTEST_TEST(vb6_parser_tests, enum_declaration)
 
 GTEST_TEST(vb6_parser_tests, global_var_declaration)
 {
-  auto str = "Global g_logger As Long, v1, XRes As New Object, ptr As Module.MyRec, g_active As Boolean\r\n"s;
+  auto str = "Global g_logger As Long, v1, XRes As New Object, ptr As Module.MyRec, g_active As Boolean\r\n";
   vb6_ast::global_var_decls vars;
   auto [res, sv] = test_grammar(str, vb6_grammar::global_var_declaration, vars);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -380,7 +378,7 @@ GTEST_TEST(vb6_parser_tests, global_var_declaration)
 
 GTEST_TEST(vb6_parser_tests, const_var_declaration1)
 {
-  auto cstr = "Const e As Single = 2.8, pi As Double = 3.14, u As Integer = -1\r\n"s;
+  auto cstr = "Const e As Single = 2.8, pi As Double = 3.14, u As Integer = -1\r\n";
   vb6_ast::const_var_stat cvars;
   auto [res, sv] = test_grammar(cstr, vb6_grammar::const_var_declaration, cvars);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -461,7 +459,7 @@ GTEST_TEST(vb6_parser_tests, param_decl)
 
 GTEST_TEST(vb6_parser_tests, param_list_decl)
 {
-  vector<vb6_ast::func_param> fps;
+  std::vector<vb6_ast::func_param> fps;
   auto [res, sv] = test_grammar("ByVal name As String, ByRef val As Integer",
                -(vb6_grammar::param_decl % ','), fps);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -560,7 +558,7 @@ GTEST_TEST(vb6_parser_tests, subroutine_head)
 
 GTEST_TEST(vb6_parser_tests, subroutine_head2)
 {
-  auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n"s;
+  auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
   vb6_ast::subHead sh;
   auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -619,7 +617,7 @@ GTEST_TEST(vb6_parser_tests, subroutine_head_with_optional_params)
 
 GTEST_TEST(vb6_parser_tests, property_let_head)
 {
-  auto str = "Public Property Let Width(ByVal w As Integer)\r\n"s;
+  auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
   vb6_ast::propertyLetHead ast;
   auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -632,7 +630,7 @@ GTEST_TEST(vb6_parser_tests, property_let_head)
 
 GTEST_TEST(vb6_parser_tests, property_get_head)
 {
-  auto str = "Public Property Get Width() As Integer\r\n"s;
+  auto str = "Public Property Get Width() As Integer\r\n";
   vb6_ast::propertyGetHead ast;
   auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -648,7 +646,7 @@ GTEST_TEST(vb6_parser_tests, property_get_head)
 GTEST_TEST(vb6_parser_tests, dll_subroutine_declaration)
 {
   vb6_ast::externalSub extsub;
-  auto str = "Private Declare Sub BeepVB Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single)\r\n"s;
+  auto str = "Private Declare Sub BeepVB Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single)\r\n";
   auto [res, sv] = test_grammar(str, vb6_grammar::external_sub_decl, extsub);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -663,7 +661,7 @@ GTEST_TEST(vb6_parser_tests, dll_subroutine_declaration)
 GTEST_TEST(vb6_parser_tests, dll_function_declaration)
 {
   vb6_ast::externalFunction extfunc;
-  auto str = "Private Declare Function BeepVB Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single) As Long\r\n"s;
+  auto str = "Private Declare Function BeepVB Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single) As Long\r\n";
   auto [res, sv] = test_grammar(str, vb6_grammar::external_function_decl, extfunc);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -689,11 +687,11 @@ GTEST_TEST(vb6_parser_tests, identifier_context)
 
   EXPECT_FALSE(ctx.leading_dot);
   ASSERT_EQ(ctx.elements.size(), 3);
-  EXPECT_EQ(boost::get<string>(ctx.elements[0].get()), "var1");
+  EXPECT_EQ(boost::get<std::string>(ctx.elements[0].get()), "var1");
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(ctx.elements[1].get()).get();
   EXPECT_EQ(tmp.func_name, "func");
   EXPECT_TRUE(tmp.params.empty());
-  EXPECT_EQ(boost::get<string>(ctx.elements[2].get()), "pnt1");
+  EXPECT_EQ(boost::get<std::string>(ctx.elements[2].get()), "pnt1");
 }
 
 GTEST_TEST(vb6_parser_tests, decorated_variable)
@@ -705,11 +703,11 @@ GTEST_TEST(vb6_parser_tests, decorated_variable)
 
   EXPECT_FALSE(dec_var.ctx.leading_dot);
   ASSERT_EQ(dec_var.ctx.elements.size(), 3);
-  EXPECT_EQ(boost::get<string>(dec_var.ctx.elements[0].get()), "var1");
+  EXPECT_EQ(boost::get<std::string>(dec_var.ctx.elements[0].get()), "var1");
   auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(dec_var.ctx.elements[1].get()).get();
   EXPECT_EQ(tmp.func_name, "func");
   EXPECT_TRUE(tmp.params.empty());
-  EXPECT_EQ(boost::get<string>(dec_var.ctx.elements[2].get()), "pnt1");
+  EXPECT_EQ(boost::get<std::string>(dec_var.ctx.elements[2].get()), "pnt1");
   EXPECT_EQ(dec_var.var, "X");
 }
 
@@ -717,7 +715,7 @@ GTEST_TEST(vb6_parser_tests, attribute_block)
 {
   vb6_ast::STRICT_MODULE_STRUCTURE::module_attributes attrs;
   auto str = "Attribute ModuleName = \"MyForm\"\r\n"
-             "Attribute ProgID = \"00-00-00-00\"\r\n"s;
+             "Attribute ProgID = \"00-00-00-00\"\r\n";
   auto [res, sv] = test_grammar(str, *vb6_grammar::attributeDef, attrs);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -744,7 +742,7 @@ GTEST_TEST(vb6_parser_tests, attributes)
   vb6_ast::STRICT_MODULE_STRUCTURE::module_attributes ast;
   auto str = R"vb(Attribute ModuleName = "MyForm"
                   Attribute ProgID = "00-00-00-00"
-                  )vb"s;
+                  )vb";
   //auto [res, sv] = test_grammar(str, vb6_grammar::preamble, ast);
   auto [res, sv] = test_grammar(str, *vb6_grammar::attributeDef, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -769,10 +767,10 @@ GTEST_TEST(vb6_parser_tests, attributes)
 
 GTEST_TEST(vb6_parser_tests, options)
 {
-  vector<vb6_ast::module_option> ast;
+  std::vector<vb6_ast::module_option> ast;
   auto str = R"vb(Option Explicit
                   Option Base 0
-                  )vb"s;
+                  )vb";
   auto [res, sv] = test_grammar(str, *vb6_grammar::option_item, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -787,15 +785,15 @@ GTEST_TEST(vb6_parser_tests, options)
 GTEST_TEST(vb6_parser_tests, declaration_block)
 {
   auto const declarations
-    = boost::spirit::x3::rule<class _, vector<vb6_ast::STRICT_MODULE_STRUCTURE::declaration>>("declaration_block")
+    = boost::spirit::x3::rule<class _, std::vector<vb6_ast::STRICT_MODULE_STRUCTURE::declaration>>("declaration_block")
     = *vb6_grammar::STRICT_MODULE_STRUCTURE::declaration;
 
-  vector<vb6_ast::STRICT_MODULE_STRUCTURE::declaration> decls;
+  std::vector<vb6_ast::STRICT_MODULE_STRUCTURE::declaration> decls;
   auto str = "Const e As Double = 2.8, pi As Double = 3.14, u As Integer = -1\r\n"
              "Global g_logger As Long, v1, XRes As Object, ptr As MyRec, g_active As Boolean\r\n"
              "Private Declare Sub PFoo Lib \"mylib.dll\" Alias \"PFoo\" (ByVal val As Long)\r\n"
              "Enum MyEnum1\r\n  c1 = 0\r\n  c2 = 1\r\nEnd Enum\r\n"
-             "Public Type MyRecord1\r\n  v1 As String\r\n  v2 As Long\r\nEnd Type\r\n"s;
+             "Public Type MyRecord1\r\n  v1 As String\r\n  v2 As Long\r\nEnd Type\r\n";
   auto [res, sv] = test_grammar(str, declarations, decls);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
@@ -828,12 +826,12 @@ GTEST_TEST(vb6_parser_tests, bas_unit_STRICT_MODULE_STRUCTURE)
                   End Sub
                   Function my_fun(ByRef str As String) As Long
                   End Function
-                  )vb"s;
+                  )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::STRICT_MODULE_STRUCTURE::basModDef, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  vb6_ast_printer P(cout);
+  vb6_ast_printer P(std::cout);
   P(ast);
 
   EXPECT_EQ(ast.attrs.size(), 2);
@@ -902,12 +900,12 @@ GTEST_TEST(vb6_parser_tests, bas_unit)
                   End Sub
                   Function my_fun(ByRef str As String) As Long
                   End Function
-                  )vb"s;
+                  )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  vb6_ast_printer P(cout);
+  vb6_ast_printer P(std::cout);
   P(ast);
 
   ASSERT_EQ(ast.size(), 11);
@@ -931,7 +929,7 @@ GTEST_TEST(vb6_parser_tests, bas_unit)
 
 GTEST_TEST(vb6_parser_tests, trailing_comment)
 {
-  auto str = "Global g_var As Long ' how can we catch a trailing comment?\r\n"s;
+  auto str = "Global g_var As Long ' how can we catch a trailing comment?\r\n";
   vb6_ast::global_var_decls vars;
   auto [res, sv] = test_grammar(str, vb6_grammar::global_var_declaration, vars);
   ASSERT_TRUE(res) << "stopped at: " << sv;

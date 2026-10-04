@@ -4,18 +4,15 @@
 
 #include <boost/spirit/home/x3/version.hpp>
 
-#include <sstream>
+#include <format>
 
 namespace vb6_grammar {
 
 std::string getParserInfo()
 {
-  using namespace std;
-  ostringstream os;
-  os << "SPIRIT_X3_VERSION: " << showbase << hex << SPIRIT_X3_VERSION
-     << noshowbase << dec << '\n'
-     << "VB6_PARSER_VERSION: 0.1" << '\n';
-  return os.str();
+  return std::format("SPIRIT_X3_VERSION: {:0x}\n"
+                     "VB6_PARSER_VERSION: {}\n",
+                     SPIRIT_X3_VERSION, VB6_PARSER_VERSION);
 }
 
 }

@@ -7,7 +7,6 @@
 #include "vb6_ast_printer.hpp"
 
 #include <iostream>
-#include <map>
 #include <vector>
 
 using namespace std;
@@ -68,7 +67,7 @@ void vb6_test1(ostream& os)
                "Enum PatTypes\r\n  inpatient\r\n  outpatient\r\nEnd Enum\r\n", enum1);
   Print(enum1);
 
-  auto str = "Global g_logger As Long, v1, XRes As New Object, ptr As Module.MyRec, g_active As Boolean\r\n"s;
+  auto str = "Global g_logger As Long, v1, XRes As New Object, ptr As Module.MyRec, g_active As Boolean\r\n";
   vb6_ast::global_var_decls vars;
   test_grammar(os, "global_var_declaration", vb6_grammar::global_var_declaration, str, vars);
   Print(vars);
@@ -77,7 +76,7 @@ void vb6_test1(ostream& os)
               ", keyword As String = \"Module\""
               ", e As Single = 2.8"
               ", pi As Double = 3.14"
-              ", u As Integer = -1\r\n"s;
+              ", u As Integer = -1\r\n";
   vb6_ast::const_var_stat cvars;
   test_grammar(os, "const_var_declaration", vb6_grammar::const_var_declaration, cstr, cvars);
   Print(cvars);
@@ -122,7 +121,7 @@ void vb6_test1(ostream& os)
                "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n", sub_header1);
   Print(sub_header1);
 
-  auto str2 = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n"s;
+  auto str2 = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
   vb6_ast::subHead sh;
   test_grammar(os, "subroutine_head2", vb6_grammar::subHead, str2, sh);
   Print(sh);

@@ -7,7 +7,6 @@
 #include "vb6_ast_printer.hpp"
 
 #include <iostream>
-#include <map>
 #include <vector>
 
 using namespace std;
@@ -203,22 +202,22 @@ void vb6_test2(ostream& os)
   vb6_ast_printer Print(os);
 
   vb6_ast::record rec;
-  auto str3 = "Private Type myrec\r\n  name As String\r\n  age As Integer\r\nEnd Type\r\n"s;
+  auto str3 = "Private Type myrec\r\n  name As String\r\n  age As Integer\r\nEnd Type\r\n";
   test_grammar(os, "record_declaration", vb6_grammar::record_declaration, str3, rec);
   Print(rec);
 
   vb6_ast::vb_enum enum_res;
-  auto str4 = "Private Enum ComprKind\r\n  NoCompr = 0\r\n  Jpeg = 1\r\n  Tiff\r\nEnd Enum\r\n"s;
+  auto str4 = "Private Enum ComprKind\r\n  NoCompr = 0\r\n  Jpeg = 1\r\n  Tiff\r\nEnd Enum\r\n";
   test_grammar(os, "enum_declaration", vb6_grammar::enum_declaration, str4, enum_res);
   Print(enum_res);
 
   vb6_ast::externalSub extsub;
-  auto str5 = "Private Declare Sub Beep Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single)\r\n"s;
+  auto str5 = "Private Declare Sub Beep Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single)\r\n";
   test_grammar(os, "DLL subroutine declaration", vb6_grammar::external_sub_decl, str5, extsub);
   Print(extsub);
 
   vb6_ast::externalFunction extfunc;
-  auto str6 = "Private Declare Function Beep Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single) As Long\r\n"s;
+  auto str6 = "Private Declare Function Beep Lib \"kernel32.dll\" Alias \"Beep\" (ByVal time As Long, ByVal xx As Single) As Long\r\n";
   test_grammar(os, "DLL function declaration", vb6_grammar::external_function_decl, str6, extfunc);
   Print(extfunc);
 
@@ -231,7 +230,7 @@ void vb6_test2(ostream& os)
               "Global g_logger As Long, v1, XRes As Object, ptr As MyRec, g_active As Boolean\r\n"
               "Private Declare Sub PFoo Lib \"mylib.dll\" Alias \"PFoo\" (ByVal val As Long)\r\n"
               "Enum MyEnum1\r\n  c1 = 0\r\n  c2 = 1\r\nEnd Enum\r\n"
-              "Public Type MyRecord1\r\n  v1 As String\r\n  v2 As Long\r\nEnd Type\r\n"s;
+              "Public Type MyRecord1\r\n  v1 As String\r\n  v2 As Long\r\nEnd Type\r\n";
   test_grammar(os, "Declaration block", declarations, str7, decls);
   os << str7 << '\n';
   for(auto& el : decls)

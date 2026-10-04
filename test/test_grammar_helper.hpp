@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <string_view>
+#include <sstream>
 #include <utility>
 
 template <class ruleType, class attrType>
@@ -21,7 +22,7 @@ std::pair<bool, std::string_view> test_grammar(std::string_view fragment, ruleTy
   auto it1 = cbegin(fragment);
   auto const it2 = cend(fragment);
 
-  std::stringstream out;
+  std::ostringstream out;
 
   vb6_grammar::error_handler_type error_handler(it1, it2, out, "source.bas");
 

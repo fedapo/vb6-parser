@@ -1,0 +1,64 @@
+name: Manual Build and Test
+
+on:
+  workflow_dispatch: # This ensures the workflow runs ONLY when you manually trigger it from GitHub
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GCC 15
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+          sudo apt-get install -y autoconf autoconf-archive automake gcc-15 g++-15 libtool ninja-build
+
+      - name: Setup CMake 3.31+
+        uses: lukka/get-cmake@v3.31.5
+        with:
+          cmakeVersion: "3.31.x"
+
+      - name: Set up VCPKG_ROOT environment
+        run: |
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
+
+      # Cache Vcpkg binary packages between runs to avoid rebuilding from scratch
+      #- name: Restore Vcpkg binary cache
+      #  uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      ~/.cache/vcpkg/archives
+      #      ${{ github.workspace }}/vcpkg_installed
+      #    key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'CMakePresets.json') }}
+      #    restore-keys: |
+      #      ${{ runner.os }}-vcpkg-
+
+      # Cache the classic mode installed packages so you don't rebuild them every time
+      - name: Restore Vcpkg Installed Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_ROOT }}/installed
+          key: ${{ runner.os }}-vcpkg-classic-${{ hashFiles('CMakePresets.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-classic-
+
+      # Install your project's dependencies in classic mode
+      - name: Install Dependencies (Classic Mode)
+        run: |
+          $VCPKG_INSTALLATION_ROOT/vcpkg install bext-ut boost catch2 doctest gtest
+
+      - name: Configure CMake with Vcpkg
+        env:
+          CC: gcc-15
+          CXX: g++-15
+        run: cmake --preset vcpkg
+
+      - name: Build Project
+        run: cmake --build --preset vcpkg
+
+      - name: Run Tests with CTest
+        run: ctest --preset vcpkg

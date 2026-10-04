@@ -74,16 +74,3 @@ std::ostream& tag_fail(std::ostream& os)
   os << "[" << setcolor(0x04) << "fail" << setcolor(0x07) << "]";
   return os;
 }
-
-void wait_key_pressed()
-{
-#ifdef _MSC_VER
-  HANDLE hstdin = GetStdHandle(STD_INPUT_HANDLE);
-
-  // wait for a key to be pressed
-  WaitForSingleObject(hstdin, INFINITE);
-
-  // what's this for? removes all characters input by the users?
-  FlushConsoleInputBuffer(hstdin);
-#endif
-}

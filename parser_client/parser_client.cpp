@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <map>
+#include <print>
 #include <string_view>
 
 void vb6_test1(std::ostream&);
@@ -18,31 +18,29 @@ void vb6_test_statements(std::ostream&);
 void test_vb6_unit(std::ostream&, std::string_view unit);
 void test_gosub(std::ostream&);
 
-using namespace std;
-
-void test_vbasic(ostream& os, string const& fname)
+void test_vbasic(std::ostream& os, std::string const& fname)
 {
-  ifstream is(fname, ios::binary);
+  std::ifstream is(fname, std::ios::binary);
 
   if(!is)
   {
-    cerr << "Could not open input file: " << fname << '\n';
+    std::println(std::cerr, "Could not open input file: {}", fname);
     return;
   }
 
   // no whitespace skipping on the stream
-  noskipws(is); //is.unsetf(ios::skipws);
+  std::noskipws(is);
 
-  string unit;
-  copy(istream_iterator<char>(is), istream_iterator<char>(),
-       back_inserter(unit));
+  std::string unit;
+  std::copy(std::istream_iterator<char>(is), std::istream_iterator<char>(),
+            std::back_inserter(unit));
 
   test_vb6_unit(os, unit);
 }
 
-void test_vbasic(ostream& os)
+void test_vbasic(std::ostream& os)
 {
-  string unit = R"vb(Option Explicit
+  std::string_view unit = R"vb(Option Explicit
 Dim str As String
 
 Sub foo(a As Integer, b As Long)
@@ -53,15 +51,15 @@ Sub foo(a As Integer, b As Long)
 
 int main()
 {
-  cout << vb6_grammar::getParserInfo() << '\n';
+  std::println("{}", vb6_grammar::getParserInfo());
 
-  vb6_test1(cout);
-  vb6_test_statements(cout);
-  vb6_test2(cout);
+  vb6_test1(std::cout);
+  vb6_test_statements(std::cout);
+  vb6_test2(std::cout);
 
-  test_vbasic(cout, "data/test.bas");
-  test_vbasic(cout, "data/long_source.bas");
-  test_vbasic(cout);
+  test_vbasic(std::cout, "data/test.bas");
+  test_vbasic(std::cout, "data/long_source.bas");
+  test_vbasic(std::cout);
 
-  //test_gosub(cout);
+  //test_gosub(std::cout);
 }

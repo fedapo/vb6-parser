@@ -106,7 +106,7 @@ enum class gotoType
 
 enum class onerror_type
 {
-  goto_0, // disables enabled error handler in the current procedureand resets it to Nothing
+  goto_0, // disables enabled error handler in the current procedure and resets it to Nothing
   goto_neg_1, // disables enabled exception in the current procedure and resets it to Nothing
   goto_label,
   exit_sub,
@@ -430,9 +430,9 @@ struct ifelseStmt;
 struct withStmt;
 struct selectStmt;
 
-// FED ???? pazzesco! senza questi #define non compila
-//#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-//#define BOOST_MPL_LIMIT_LIST_SIZE 30
+// NOTE: Boost needs these preprocessor defines to compile!
+//     BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+//     BOOST_MPL_LIMIT_LIST_SIZE 30
 struct singleStmt : x3::variant<
   lonely_comment,
   empty_line,
