@@ -586,6 +586,29 @@ GTEST_TEST(vb6_parser_tests, function_head_qualified_return_type)
   EXPECT_EQ(return_type.name, "fOrm");
 }
 
+GTEST_TEST(vb6_parser_tests, parameterless_procedure_heads_without_parentheses)
+{
+  vb6_ast::subHead sh;
+  auto [sub_res, sub_remaining] =
+    test_grammar("Private Sub NoParamSub\r\n", vb6_grammar::subHead, sh);
+  ASSERT_TRUE(sub_res) << "stopped at: " << sub_remaining;
+  EXPECT_TRUE(sub_remaining.empty());
+  EXPECT_EQ(sh.name, "NoParamSub");
+  EXPECT_TRUE(sh.params.empty());
+
+  vb6_ast::functionHead fh;
+  auto [function_res, function_remaining] =
+    test_grammar("Private Function NoParamFunction As Object\r\n",
+                 vb6_grammar::functionHead, fh);
+  ASSERT_TRUE(function_res) << "stopped at: " << function_remaining;
+  EXPECT_TRUE(function_remaining.empty());
+  EXPECT_EQ(fh.name, "NoParamFunction");
+  EXPECT_TRUE(fh.params.empty());
+  ASSERT_TRUE(fh.return_type);
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()),
+            vb6_ast::NativeType::Object);
+}
+
 GTEST_TEST(vb6_parser_tests, subroutine_head)
 {
   vb6_ast::subHead sh;

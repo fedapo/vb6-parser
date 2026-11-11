@@ -303,6 +303,9 @@ namespace vb6_grammar {
 
   // helper definition
   auto const param_list_decl = -(param_decl % ',');
+  auto const optional_procedure_params =
+    ( '(' >> ((param_decl % ',') | x3::attr(std::vector<vb6_ast::func_param>{})) >> ')')
+    | x3::attr(std::vector<vb6_ast::func_param>{});
 
   auto const external_sub_decl_def = private_or_public >> kwDeclare >> kwSub >> sub_identifier
                                   >> kwLib >> lib_name >> -(kwAlias >> alias_name)
@@ -314,14 +317,14 @@ namespace vb6_grammar {
                                        >> cmdTermin;
   auto const subHead_def = private_or_public >> kwSub
                         >> sub_identifier
-                        >> '(' >> param_list_decl >> ')'
+                        >> optional_procedure_params
                         >> cmdTermin;
   auto const eventHead_def = private_or_public >> kwEvent
                           >> sub_identifier
                           >> '(' >> param_list_decl >> ')'
                           >> cmdTermin;
   auto const functionHead_def = private_or_public >> kwFunction >> func_identifier
-                             >> '(' >> param_list_decl >> ')' >> -(kwAs >> type_identifier)
+                             >> optional_procedure_params >> -(kwAs >> type_identifier)
                              >> cmdTermin;
   auto const property_letHead_def = private_or_public >> (kwProperty > kwLet) >> prop_identifier
                                  >> '(' >> param_list_decl >> ')'

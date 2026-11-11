@@ -581,6 +581,28 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(return_type.name == "fOrm");
   };
 
+  ut::test("parameterless_procedure_heads_without_parentheses") = []
+  {
+    vb6_ast::subHead sh;
+    auto [sub_res, sub_remaining] =
+      test_grammar("Private Sub NoParamSub\r\n", vb6_grammar::subHead, sh);
+    ut::expect(fatal(sub_res)) << "stopped at: " << sub_remaining;
+    ut::expect(sub_remaining.empty());
+    ut::expect(sh.name == "NoParamSub");
+    ut::expect(sh.params.empty());
+
+    vb6_ast::functionHead fh;
+    auto [function_res, function_remaining] =
+      test_grammar("Private Function NoParamFunction As Object\r\n",
+                   vb6_grammar::functionHead, fh);
+    ut::expect(fatal(function_res)) << "stopped at: " << function_remaining;
+    ut::expect(function_remaining.empty());
+    ut::expect(fh.name == "NoParamFunction");
+    ut::expect(fh.params.empty());
+    ut::expect(fatal(fh.return_type.has_value()));
+    ut::expect(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Object);
+  };
+
   ut::test("subroutine_head") = []
   {
     vb6_ast::subHead sh;

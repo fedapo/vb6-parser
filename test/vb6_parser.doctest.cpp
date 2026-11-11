@@ -593,6 +593,28 @@ TEST_CASE("function_head_qualified_return_type")
   CHECK_EQ(return_type.name, "fOrm");
 }
 
+TEST_CASE("parameterless_procedure_heads_without_parentheses")
+{
+  vb6_ast::subHead sh;
+  auto [sub_res, sub_remaining] =
+    test_grammar("Private Sub NoParamSub\r\n", vb6_grammar::subHead, sh);
+  REQUIRE_MESSAGE(sub_res, "stopped at: " << sub_remaining);
+  CHECK(sub_remaining.empty());
+  CHECK_EQ(sh.name, "NoParamSub");
+  CHECK(sh.params.empty());
+
+  vb6_ast::functionHead fh;
+  auto [function_res, function_remaining] =
+    test_grammar("Private Function NoParamFunction As Object\r\n",
+                 vb6_grammar::functionHead, fh);
+  REQUIRE_MESSAGE(function_res, "stopped at: " << function_remaining);
+  CHECK(function_remaining.empty());
+  CHECK_EQ(fh.name, "NoParamFunction");
+  CHECK(fh.params.empty());
+  REQUIRE(fh.return_type.has_value());
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()), vb6_ast::NativeType::Object);
+}
+
 TEST_CASE("subroutine_head")
 {
   vb6_ast::subHead sh;
