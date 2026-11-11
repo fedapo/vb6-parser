@@ -45,7 +45,10 @@ namespace vb6_grammar {
   namespace x3 = boost::spirit::x3;
 
   // the terminator for every VB6 statement
-  auto const cmdTermin = x3::eol | ':';
+  auto const trailing_comment =
+    x3::omit[(x3::lit('\'') | (kwRem >> !x3::char_("a-zA-Z0-9_£")))
+             >> x3::no_skip[*(x3::char_ - x3::eol)]];
+  auto const cmdTermin = -trailing_comment >> (x3::eol | ':');
 
   // keyword groups
   auto const kwgEndType     = kwEnd > kwType     > cmdTermin;
