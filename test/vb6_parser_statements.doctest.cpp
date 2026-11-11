@@ -94,7 +94,10 @@ TEST_CASE("LocalVarDecl")
     CHECK(st.vars[0].construct);
     CHECK_EQ(st.vars[0].name, "var");
     REQUIRE(st.vars[0].type.has_value());
-    CHECK_EQ(*st.vars[0].type, "Form");
+    auto const& form_type =
+      boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value.get());
+    CHECK(!form_type.library_or_module.has_value());
+    CHECK_EQ(form_type.name, "Form");
   }
 
   SUBCASE("2")
@@ -110,12 +113,12 @@ TEST_CASE("LocalVarDecl")
     CHECK(!st.vars[0].construct);
     CHECK_EQ(st.vars[0].name, "var1");
     REQUIRE(st.vars[0].type.has_value());
-    CHECK_EQ(*st.vars[0].type, "String");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(st.vars[0].type->value.get()), vb6_ast::NativeType::String);
 
     CHECK(!st.vars[1].construct);
     CHECK_EQ(st.vars[1].name, "var2");
     REQUIRE(st.vars[1].type.has_value());
-    CHECK_EQ(*st.vars[1].type, "Integer");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(st.vars[1].type->value.get()), vb6_ast::NativeType::Integer);
   }
 }
 

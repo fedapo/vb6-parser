@@ -36,9 +36,9 @@ void vb6_test1(ostream& os)
   test_grammar(os, "var_identifier", vb6_grammar::var_identifier, "g_logger", var);
   os << var << '\n';
 
-  string type;
+  vb6_ast::type_identifier type;
   test_grammar(os, "type_identifier", vb6_grammar::type_identifier, "Long", type);
-  os << type << '\n';
+  os << vb6_ast::type_identifier_spelling(type) << '\n';
 
   vb6_ast_printer Print(os);
 

@@ -9,9 +9,12 @@
 #include "vb6_parser_keywords.hpp"
 #include "vb6_parser_operators.hpp"
 
+#include <boost/fusion/include/at_c.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/utility/annotate_on_success.hpp>
+
+#include <utility>
 
 // http://boost.2283326.n4.nabble.com/Horrible-compiletimes-and-memory-usage-while-compiling-a-parser-with-X3-td4689104.html
 
@@ -112,51 +115,48 @@ namespace vb6_grammar {
                                    >> *((functionCall | basic_identifier) >> opDot);
 
   auto const param_qualifier = kwByVal | kwByRef;
-  auto const simple_type_identifier_def = //x3::attr(boost::optional<std::string>()) >>
-                                        ( kwBoolean
-                                        | kwByte
-                                        | kwInteger
-                                        | kwLong
-                                        | kwSingle
-                                        | kwDouble
-                                        | kwCurrency
-                                        | kwDate
-                                        | kwString
-                                        | kwObject
-                                        | kwVariant);
-/*
-  auto const simple_type_identifier_def = (kwBoolean  >> x3::attr(vb6_ast::NativeType::Boolean))
-                                        | (kwByte     >> x3::attr(vb6_ast::NativeType::Byte))
-                                        | (kwInteger  >> x3::attr(vb6_ast::NativeType::Integer))
-                                        | (kwLong     >> x3::attr(vb6_ast::NativeType::Long))
-                                        | (kwSingle   >> x3::attr(vb6_ast::NativeType::Single))
-                                        | (kwDouble   >> x3::attr(vb6_ast::NativeType::Double))
-                                        | (kwCurrency >> x3::attr(vb6_ast::NativeType::Currency))
-                                        | (kwDate     >> x3::attr(vb6_ast::NativeType::Date))
-                                        | (kwString   >> x3::attr(vb6_ast::NativeType::String))
-                                        | (kwObject   >> x3::attr(vb6_ast::NativeType::Object))
-                                        | (kwVariant  >> x3::attr(vb6_ast::NativeType::Variant));
-*/
-  auto const complex_type_identifier_def = x3::omit[-(basic_identifier >> opDot)] >> basic_identifier;
-  auto const type_identifier_def = (simple_type_identifier | complex_type_identifier);
+  auto const simple_type_identifier_def =
+      (x3::omit[kwBoolean]  >> x3::attr(vb6_ast::NativeType::Boolean))
+    | (x3::omit[kwByte]     >> x3::attr(vb6_ast::NativeType::Byte))
+    | (x3::omit[kwInteger]  >> x3::attr(vb6_ast::NativeType::Integer))
+    | (x3::omit[kwLong]     >> x3::attr(vb6_ast::NativeType::Long))
+    | (x3::omit[kwSingle]   >> x3::attr(vb6_ast::NativeType::Single))
+    | (x3::omit[kwDouble]   >> x3::attr(vb6_ast::NativeType::Double))
+    | (x3::omit[kwCurrency] >> x3::attr(vb6_ast::NativeType::Currency))
+    | (x3::omit[kwDate]     >> x3::attr(vb6_ast::NativeType::Date))
+    | (x3::omit[kwString]   >> x3::attr(vb6_ast::NativeType::String))
+    | (x3::omit[kwObject]   >> x3::attr(vb6_ast::NativeType::Object))
+    | (x3::omit[kwVariant]  >> x3::attr(vb6_ast::NativeType::Variant))
+    | (x3::omit[kwAny]      >> x3::attr(vb6_ast::NativeType::Any));
+  auto const complex_type_identifier_def =
+      (basic_identifier >> x3::omit[opDot] >> basic_identifier)
+    | (x3::attr(boost::optional<std::string>{}) >> basic_identifier);
+  auto const type_identifier_def = simple_type_identifier | complex_type_identifier;
 
   auto const array_size_decl = x3::omit["(" >> x3::int_ >> ")"];
 
-  auto const tmp //= x3::rule<class tmp_class, std::tuple<bool, boost::optional<vb6_ast::simple_type_identifier>>>()
-                 =   (kwAs >> kwNew >> x3::attr(true) >> type_identifier);
-                   //| (kwAs >> x3::attr(false) >> type_identifier)
-                   //| (x3::attr(false) >> x3::attr(boost::none));
-
-  auto const tmp1 //= x3::rule<class tmp1_class, std::tuple<bool, boost::optional<vb6_ast::simple_type_identifier>>>()
-                  = kwAs >> kwNew >> x3::attr(true) >> simple_type_identifier;
-  auto const tmp2 //= x3::rule<class tmp2_class, std::tuple<bool, boost::optional<vb6_ast::simple_type_identifier>>>()
-                  = kwAs >>          x3::attr(false) >> simple_type_identifier;
-
-  auto const single_var_implicit_declaration_def = var_identifier >> -array_size_decl >> x3::attr(false) >> x3::attr(boost::none);
-
-  auto const single_var_declaration_def = var_identifier >> -array_size_decl >> (tmp1);
-  //auto const single_var_declaration_def = var_identifier >> -array_size_decl >> (tmp1 | tmp2);
-  //auto const single_var_declaration_def = var_identifier >> -array_size_decl >> -(kwAs >> -(kwNew >> x3::attr(true)) >> type_identifier);
+  auto const reset_variable = [](auto& ctx)
+  {
+    x3::_val(ctx) = vb6_ast::variable{};
+  };
+  auto const set_variable_name = [](auto& ctx)
+  {
+    x3::_val(ctx).name = x3::_attr(ctx);
+  };
+  auto const mark_variable_construct = [](auto& ctx)
+  {
+    x3::_val(ctx).construct = true;
+  };
+  auto const set_variable_type = [](auto& ctx)
+  {
+    x3::_val(ctx).type = x3::_attr(ctx);
+  };
+  auto const single_var_declaration_def =
+    x3::omit[x3::eps[reset_variable]
+           >> var_identifier[set_variable_name]
+           >> -array_size_decl
+           >> -(kwAs >> -kwNew[mark_variable_construct]
+                >> type_identifier[set_variable_type])];
   auto const global_var_declaration_def = ( (kwDim >> x3::attr(vb6_ast::access_type::dim))
                                           | (kwGlobal >> x3::attr(vb6_ast::access_type::global))
                                           | (kwPublic >> x3::attr(vb6_ast::access_type::public_))

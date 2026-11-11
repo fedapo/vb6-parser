@@ -32,6 +32,15 @@ BOOST_FUSION_ADAPT_STRUCT(vb6_ast::identifier_context,
     elements
 )
 
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::user_defined_type,
+    library_or_module,
+    name
+)
+
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::type_identifier,
+    value
+)
+
 BOOST_FUSION_ADAPT_STRUCT(vb6_ast::variable,
     name,
     construct,

@@ -89,7 +89,10 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_1)
   EXPECT_TRUE(st.vars[0].construct);
   EXPECT_EQ(st.vars[0].name, "var");
   ASSERT_TRUE(st.vars[0].type);
-  EXPECT_EQ(*st.vars[0].type, "Form");
+  auto const& form_type =
+    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value.get());
+  EXPECT_FALSE(form_type.library_or_module.has_value());
+  EXPECT_EQ(form_type.name, "Form");
 }
 
 GTEST_TEST(vb6_parser_statements, LocalVarDecl_2)
@@ -106,12 +109,12 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_2)
   EXPECT_FALSE(st.vars[0].construct);
   EXPECT_EQ(st.vars[0].name, "var1");
   ASSERT_TRUE(st.vars[0].type);
-  EXPECT_EQ(*st.vars[0].type, "String");
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[0].type->value.get()), vb6_ast::NativeType::String);
 
   EXPECT_FALSE(st.vars[1].construct);
   EXPECT_EQ(st.vars[1].name, "var2");
   ASSERT_TRUE(st.vars[1].type);
-  EXPECT_EQ(*st.vars[1].type, "Integer");
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[1].type->value.get()), vb6_ast::NativeType::Integer);
 }
 
 GTEST_TEST(vb6_parser_statements, ReDim)

@@ -135,7 +135,7 @@ namespace vb6_grammar {
   using identifier_context_type      = x3::rule<identifier_context_class,      vb6_ast::identifier_context>;
   using simple_type_identifier_type  = x3::rule<simple_type_identifier_class,  vb6_ast::simple_type_identifier>;
   using complex_type_identifier_type = x3::rule<complex_type_identifier_class, vb6_ast::complex_type_identifier>;
-  using type_identifier_type         = x3::rule<type_identifier_class,         std::string>;
+  using type_identifier_type         = x3::rule<type_identifier_class,         vb6_ast::type_identifier>;
   using single_var_declaration_type  = x3::rule<single_var_declaration_class,  vb6_ast::variable>;
   using global_var_declaration_type  = x3::rule<global_var_declaration_class,  vb6_ast::global_var_decls>;
   using record_declaration_type      = x3::rule<record_declaration_class,      vb6_ast::record>;

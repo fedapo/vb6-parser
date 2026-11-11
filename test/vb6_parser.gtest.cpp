@@ -109,22 +109,30 @@ GTEST_TEST(vb6_parser_simple, var_identifier)
 
 GTEST_TEST(vb6_parser_simple, type_identifier)
 {
-  std::string type;
-  auto [res, sv] = test_grammar("Long", vb6_grammar::type_identifier, type);
+  vb6_ast::type_identifier type;
+  auto [res, sv] = test_grammar("lOnG", vb6_grammar::type_identifier, type);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(type, "Long");
+  EXPECT_EQ(type.value.get().type(), typeid(vb6_ast::NativeType));
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(type.value.get()), vb6_ast::NativeType::Long);
+
+  auto [any_res, any_sv] = test_grammar("Any", vb6_grammar::type_identifier, type);
+  ASSERT_TRUE(any_res) << "stopped at: " << any_sv;
+  EXPECT_TRUE(any_sv.empty());
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(type.value.get()), vb6_ast::NativeType::Any);
 }
 
 GTEST_TEST(vb6_parser_simple, complex_type_identifier)
 {
-  std::string type;
-  auto [res, sv] = test_grammar("VB.Form", vb6_grammar::complex_type_identifier, type);
+  vb6_ast::complex_type_identifier type;
+  auto [res, sv] = test_grammar("vB.fOrm", vb6_grammar::complex_type_identifier, type);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(type, "VB.Form");
+  ASSERT_TRUE(type.library_or_module.has_value());
+  EXPECT_EQ(*type.library_or_module, "vB");
+  EXPECT_EQ(type.name, "fOrm");
 }
 
 GTEST_TEST(vb6_parser_simple, const_expression_non_numeric)
@@ -260,7 +268,8 @@ GTEST_TEST(vb6_parser_simple, single_var_declaration)
     EXPECT_TRUE(P1.type);
     if(P1.type)
     {
-      EXPECT_EQ(*P1.type, "Long");
+      EXPECT_EQ(boost::get<vb6_ast::NativeType>(P1.type->value.get()),
+                vb6_ast::NativeType::Long);
     }
   }
   {
@@ -274,7 +283,8 @@ GTEST_TEST(vb6_parser_simple, single_var_declaration)
     EXPECT_TRUE(P2.type);
     if(P2.type)
     {
-      EXPECT_EQ(*P2.type, "String");
+      EXPECT_EQ(boost::get<vb6_ast::NativeType>(P2.type->value.get()),
+                vb6_ast::NativeType::String);
     }
   }
 }
@@ -295,7 +305,8 @@ GTEST_TEST(vb6_parser_tests, record_declaration)
   EXPECT_TRUE(rec.members[0].type);
   if(rec.members[0].type)
   {
-    EXPECT_EQ(*rec.members[0].type, "String");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(rec.members[0].type->value.get()),
+              vb6_ast::NativeType::String);
   }
   EXPECT_FALSE(rec.members[0].construct);
 
@@ -303,7 +314,8 @@ GTEST_TEST(vb6_parser_tests, record_declaration)
   EXPECT_TRUE(rec.members[1].type);
   if(rec.members[1].type)
   {
-    EXPECT_EQ(*rec.members[1].type, "Integer");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(rec.members[1].type->value.get()),
+              vb6_ast::NativeType::Integer);
   }
   EXPECT_FALSE(rec.members[1].construct);
 }
@@ -344,7 +356,8 @@ GTEST_TEST(vb6_parser_tests, global_var_declaration)
   EXPECT_TRUE(vars.vars[0].type);
   if(vars.vars[0].type)
   {
-    EXPECT_EQ(*vars.vars[0].type, "Long");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()),
+              vb6_ast::NativeType::Long);
   }
 
   EXPECT_EQ(vars.vars[1].name, "v1");
@@ -356,7 +369,8 @@ GTEST_TEST(vb6_parser_tests, global_var_declaration)
   EXPECT_TRUE(vars.vars[2].type);
   if(vars.vars[2].type)
   {
-    EXPECT_EQ(*vars.vars[2].type, "Object");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(vars.vars[2].type->value.get()),
+              vb6_ast::NativeType::Object);
   }
 
   EXPECT_EQ(vars.vars[3].name, "ptr");
@@ -364,7 +378,11 @@ GTEST_TEST(vb6_parser_tests, global_var_declaration)
   EXPECT_TRUE(vars.vars[3].type);
   if(vars.vars[3].type)
   {
-    EXPECT_EQ(*vars.vars[3].type, "MyRec");
+    auto const& user_type =
+      boost::get<vb6_ast::complex_type_identifier>(vars.vars[3].type->value.get());
+    ASSERT_TRUE(user_type.library_or_module.has_value());
+    EXPECT_EQ(*user_type.library_or_module, "Module");
+    EXPECT_EQ(user_type.name, "MyRec");
   }
 
   EXPECT_EQ(vars.vars[4].name, "g_active");
@@ -372,7 +390,8 @@ GTEST_TEST(vb6_parser_tests, global_var_declaration)
   EXPECT_TRUE(vars.vars[4].type);
   if(vars.vars[4].type)
   {
-    EXPECT_EQ(*vars.vars[4].type, "Boolean");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(vars.vars[4].type->value.get()),
+              vb6_ast::NativeType::Boolean);
   }
 }
 
@@ -389,7 +408,8 @@ GTEST_TEST(vb6_parser_tests, const_var_declaration1)
   EXPECT_EQ(cvars[0].var.name, "e");
   if(cvars[0].var.type)
   {
-    EXPECT_EQ(*cvars[0].var.type, "Single");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()),
+              vb6_ast::NativeType::Single);
   }
   EXPECT_FALSE(cvars[0].var.construct);
   EXPECT_EQ(boost::get<float>(cvars[0].value.get()), 2.8f);
@@ -397,7 +417,8 @@ GTEST_TEST(vb6_parser_tests, const_var_declaration1)
   EXPECT_EQ(cvars[1].var.name, "pi");
   if(cvars[1].var.type)
   {
-    EXPECT_EQ(*cvars[1].var.type, "Double");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(cvars[1].var.type->value.get()),
+              vb6_ast::NativeType::Double);
   }
   EXPECT_FALSE(cvars[1].var.construct);
   EXPECT_EQ(boost::get<float>(cvars[1].value.get()), 3.14f);
@@ -405,7 +426,8 @@ GTEST_TEST(vb6_parser_tests, const_var_declaration1)
   EXPECT_EQ(cvars[2].var.name, "u");
   if(cvars[2].var.type)
   {
-    EXPECT_EQ(*cvars[2].var.type, "Integer");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(cvars[2].var.type->value.get()),
+              vb6_ast::NativeType::Integer);
   }
   EXPECT_FALSE(cvars[2].var.construct);
   EXPECT_EQ(boost::get<vb6_ast::integer_dec>(cvars[2].value.get()).val, -1);
@@ -424,7 +446,8 @@ GTEST_TEST(vb6_parser_tests, const_var_declaration2)
   EXPECT_EQ(cvars[0].var.name, "PI");
   if(cvars[0].var.type)
   {
-    EXPECT_EQ(*cvars[0].var.type, "Double");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()),
+              vb6_ast::NativeType::Double);
   }
   EXPECT_FALSE(cvars[0].var.construct);
   EXPECT_EQ(boost::get<float>(cvars[0].value.get()), 3.1415f);
@@ -448,7 +471,8 @@ GTEST_TEST(vb6_parser_tests, param_decl)
   EXPECT_TRUE(fp.var.type);
   if(fp.var.type)
   {
-    EXPECT_EQ(*fp.var.type, "String");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(fp.var.type->value.get()),
+              vb6_ast::NativeType::String);
   }
   EXPECT_TRUE(fp.defvalue);
   if(fp.defvalue)
@@ -478,7 +502,8 @@ GTEST_TEST(vb6_parser_tests, param_list_decl)
   EXPECT_TRUE(fps[0].var.type);
   if(fps[0].var.type)
   {
-    EXPECT_EQ(*fps[0].var.type, "String");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(fps[0].var.type->value.get()),
+              vb6_ast::NativeType::String);
   }
   EXPECT_FALSE(fps[0].defvalue);
 
@@ -493,7 +518,8 @@ GTEST_TEST(vb6_parser_tests, param_list_decl)
   EXPECT_TRUE(fps[1].var.type);
   if(fps[1].var.type)
   {
-    EXPECT_EQ(*fps[1].var.type, "Integer");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(fps[1].var.type->value.get()),
+              vb6_ast::NativeType::Integer);
   }
   EXPECT_FALSE(fps[1].defvalue);
 }
@@ -524,7 +550,8 @@ GTEST_TEST(vb6_parser_tests, function_head)
   EXPECT_EQ(fh.name, "OneFunc");
   EXPECT_EQ(fh.params.size(), 2);
   ASSERT_TRUE(fh.return_type);
-  EXPECT_EQ(*fh.return_type, "Integer");
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()),
+            vb6_ast::NativeType::Integer);
 }
 
 GTEST_TEST(vb6_parser_tests, function_head_no_params)
@@ -539,7 +566,24 @@ GTEST_TEST(vb6_parser_tests, function_head_no_params)
   EXPECT_EQ(fh.name, "NoParamFunc");
   EXPECT_TRUE(fh.params.empty());
   ASSERT_TRUE(fh.return_type);
-  EXPECT_EQ(*fh.return_type, "Object");
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()),
+            vb6_ast::NativeType::Object);
+}
+
+GTEST_TEST(vb6_parser_tests, function_head_qualified_return_type)
+{
+  vb6_ast::functionHead fh;
+  auto [res, sv] = test_grammar(
+    "Private Function GetForm() As vB.fOrm\r\n", vb6_grammar::functionHead, fh);
+  ASSERT_TRUE(res) << "stopped at: " << sv;
+  EXPECT_TRUE(sv.empty());
+  ASSERT_TRUE(fh.return_type.has_value());
+
+  auto const& return_type =
+    boost::get<vb6_ast::complex_type_identifier>(fh.return_type->value.get());
+  ASSERT_TRUE(return_type.library_or_module.has_value());
+  EXPECT_EQ(*return_type.library_or_module, "vB");
+  EXPECT_EQ(return_type.name, "fOrm");
 }
 
 GTEST_TEST(vb6_parser_tests, subroutine_head)
@@ -590,7 +634,8 @@ GTEST_TEST(vb6_parser_tests, subroutine_head_with_optional_params)
   EXPECT_EQ(sh.params[0].var.name, "str");
   if(sh.params[0].var.type)
   {
-    EXPECT_EQ(*sh.params[0].var.type, "String");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(sh.params[0].var.type->value.get()),
+              vb6_ast::NativeType::String);
   }
   EXPECT_FALSE(sh.params[0].var.construct);
   EXPECT_FALSE(sh.params[0].isoptional);
@@ -604,7 +649,8 @@ GTEST_TEST(vb6_parser_tests, subroutine_head_with_optional_params)
   EXPECT_EQ(sh.params[1].var.name, "valid");
   if(sh.params[1].var.type)
   {
-    EXPECT_EQ(*sh.params[1].var.type, "Boolean");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(sh.params[1].var.type->value.get()),
+              vb6_ast::NativeType::Boolean);
   }
   EXPECT_FALSE(sh.params[1].var.construct);
   EXPECT_TRUE(sh.params[1].isoptional);
@@ -640,7 +686,8 @@ GTEST_TEST(vb6_parser_tests, property_get_head)
   EXPECT_EQ(ast.name, "Width");
   EXPECT_EQ(ast.params.size(), 0);
   ASSERT_TRUE(ast.return_type);
-  EXPECT_EQ(*ast.return_type, "Integer");
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()),
+            vb6_ast::NativeType::Integer);
 }
 
 GTEST_TEST(vb6_parser_tests, dll_subroutine_declaration)
@@ -671,7 +718,8 @@ GTEST_TEST(vb6_parser_tests, dll_function_declaration)
   EXPECT_TRUE(extfunc.return_type);
   if(extfunc.return_type)
   {
-    EXPECT_EQ(*extfunc.return_type, "Long");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(extfunc.return_type->value.get()),
+              vb6_ast::NativeType::Long);
   }
   EXPECT_EQ(extfunc.alias, "Beep");
   EXPECT_EQ(extfunc.params.size(), 2);
@@ -944,6 +992,7 @@ GTEST_TEST(vb6_parser_tests, trailing_comment)
   EXPECT_TRUE(vars.vars[0].type);
   if(vars.vars[0].type)
   {
-    EXPECT_EQ(*vars.vars[0].type, "Long");
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()),
+              vb6_ast::NativeType::Long);
   }
 }

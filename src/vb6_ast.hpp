@@ -9,7 +9,9 @@
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 
 #include <map>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace vb6_ast {
@@ -18,7 +20,6 @@ namespace x3 = boost::spirit::x3;
 
 enum class NativeType
 {
-  Unspecified,
   Boolean,
   Byte,
   Integer,
@@ -30,7 +31,7 @@ enum class NativeType
   String,
   Object,
   Variant,
-  NonNative
+  Any
 };
 
 enum class rel_operator_type
@@ -170,19 +171,52 @@ struct identifier_context : x3::position_tagged
   std::vector<x3::variant<x3::forward_ast<func_call>, std::string>> elements;
 };
 
-//using simple_type_identifier  = std::pair<boost::optional<std::string>, std::string>;
-//using complex_type_identifier = std::pair<boost::optional<std::string>, std::string>;
-using simple_type_identifier = std::string;
-using complex_type_identifier = std::string;
+using simple_type_identifier = NativeType;
 
-// TODO use this as the class to encode the type in a declaration for variables and parameters
+struct user_defined_type : x3::position_tagged
+{
+  boost::optional<std::string> library_or_module;
+  std::string name;
+};
+
+using complex_type_identifier = user_defined_type;
+
 struct type_identifier : x3::position_tagged
 {
-  NativeType type = NativeType::NonNative;
-
-  boost::optional<std::string> library_or_module;
-  std::string nonnative_type;
+  x3::variant<simple_type_identifier, user_defined_type> value;
 };
+
+inline std::string_view native_type_spelling(NativeType type)
+{
+  switch(type)
+  {
+    case NativeType::Boolean: return "Boolean";
+    case NativeType::Byte: return "Byte";
+    case NativeType::Integer: return "Integer";
+    case NativeType::Long: return "Long";
+    case NativeType::Single: return "Single";
+    case NativeType::Double: return "Double";
+    case NativeType::Currency: return "Currency";
+    case NativeType::Date: return "Date";
+    case NativeType::String: return "String";
+    case NativeType::Object: return "Object";
+    case NativeType::Variant: return "Variant";
+    case NativeType::Any: return "Any";
+  }
+  throw std::invalid_argument("Invalid NativeType value");
+}
+
+inline std::string type_identifier_spelling(type_identifier const& type)
+{
+  auto const& value = type.value.get();
+  if(value.which() == 0)
+    return std::string(native_type_spelling(boost::get<simple_type_identifier>(value)));
+
+  auto const& user_type = boost::get<user_defined_type>(value);
+  if(user_type.library_or_module)
+    return *user_type.library_or_module + '.' + user_type.name;
+  return user_type.name;
+}
 
 // Ex.: frm As VB.Form
 // Ex.: frm As New MyLib.MyClass
@@ -190,9 +224,7 @@ struct variable : x3::position_tagged
 {
   std::string name;
   bool construct = false; // has the 'New' specifier
-  //boost::optional<std::string> library_or_module;
-  //simple_type_identifier type; // not sure...
-  boost::optional<simple_type_identifier> type; // not sure...
+  boost::optional<type_identifier> type;
 };
 
 struct decorated_variable : x3::position_tagged
@@ -304,7 +336,7 @@ struct functionHead : x3::position_tagged
   access_type at = access_type::na;
   std::string name;
   std::vector<func_param> params;
-  boost::optional<simple_type_identifier> return_type; // not sure...
+  boost::optional<type_identifier> return_type;
 };
 
 // Ex.: Public Property Let Title(str As String)
@@ -329,7 +361,7 @@ struct propertyGetHead : x3::position_tagged
   access_type at = access_type::na;
   std::string name;
   std::vector<func_param> params; // FED ???? does Property Get take parameters? maybe for arrays?
-  boost::optional<simple_type_identifier> return_type; // not sure...
+  boost::optional<type_identifier> return_type;
 };
 
 // Ex.: Private Sub Beep Lib "kernel32" Alias "Beep" (ByVal freq As Integer, ByVal duration As Integer)
@@ -350,7 +382,7 @@ struct externalFunction : x3::position_tagged
   std::string lib;
   std::string alias;
   std::vector<func_param> params;
-  boost::optional<simple_type_identifier> return_type; // not sure...
+  boost::optional<type_identifier> return_type;
 };
 
 // statements (things that go into functions, subroutines and property definitions)

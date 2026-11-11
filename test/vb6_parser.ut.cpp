@@ -115,20 +115,27 @@ ut::suite<"vb6_parser_simple"> _ = []
 
   ut::test("type_identifier") = []
   {
-    std::string type;
-    auto [res, sv] = test_grammar("Long", vb6_grammar::type_identifier, type);
+    vb6_ast::type_identifier type;
+    auto [res, sv] = test_grammar("lOnG", vb6_grammar::type_identifier, type);
     ut::expect(fatal(res)) << "stopped at: " << sv;
     ut::expect(sv.empty());
-    ut::expect(type == "Long"); // {FED}
+    ut::expect(boost::get<vb6_ast::NativeType>(type.value.get()) == vb6_ast::NativeType::Long);
+
+    auto [any_res, any_sv] = test_grammar("Any", vb6_grammar::type_identifier, type);
+    ut::expect(fatal(any_res)) << "stopped at: " << any_sv;
+    ut::expect(any_sv.empty());
+    ut::expect(boost::get<vb6_ast::NativeType>(type.value.get()) == vb6_ast::NativeType::Any);
   };
 
   ut::test("complex_type_identifier") = []
   {
-    std::string type;
-    auto [res, sv] = test_grammar("VB.Form", vb6_grammar::complex_type_identifier, type);
+    vb6_ast::complex_type_identifier type;
+    auto [res, sv] = test_grammar("vB.fOrm", vb6_grammar::complex_type_identifier, type);
     ut::expect(fatal(res)) << "stopped at: " << sv;
     ut::expect(sv.empty());
-    ut::expect(type == "VB.Form"); // {FED}
+    ut::expect(type.library_or_module.has_value());
+    ut::expect(*type.library_or_module == "vB");
+    ut::expect(type.name == "fOrm");
   };
 
   ut::test("const_expression_non_numeric") = []
@@ -268,7 +275,7 @@ ut::suite<"vb6_parser_simple"> _ = []
       ut::expect(P1.type.has_value());
       if(P1.type)
       {
-        ut::expect(*P1.type == "Long");
+        ut::expect(boost::get<vb6_ast::NativeType>(P1.type->value.get()) == vb6_ast::NativeType::Long);
       }
     };
 
@@ -283,7 +290,7 @@ ut::suite<"vb6_parser_simple"> _ = []
       ut::expect(P2.type.has_value());
       if(P2.type)
       {
-        ut::expect(*P2.type == "String");
+        ut::expect(boost::get<vb6_ast::NativeType>(P2.type->value.get()) == vb6_ast::NativeType::String);
       }
     };
   };
@@ -307,7 +314,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(rec.members[0].type.has_value());
     if(rec.members[0].type)
     {
-      ut::expect(*rec.members[0].type == "String");
+      ut::expect(boost::get<vb6_ast::NativeType>(rec.members[0].type->value.get()) == vb6_ast::NativeType::String);
     }
     ut::expect(!rec.members[0].construct);
 
@@ -315,7 +322,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(rec.members[1].type.has_value());
     if(rec.members[1].type)
     {
-      ut::expect(*rec.members[1].type == "Integer");
+      ut::expect(boost::get<vb6_ast::NativeType>(rec.members[1].type->value.get()) == vb6_ast::NativeType::Integer);
     }
     ut::expect(!rec.members[1].construct);
   };
@@ -356,7 +363,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(vars.vars[0].type.has_value());
     if(vars.vars[0].type)
     {
-      ut::expect(*vars.vars[0].type == "Long");
+      ut::expect(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()) == vb6_ast::NativeType::Long);
     }
 
     ut::expect(vars.vars[1].name == "v1");
@@ -368,7 +375,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(vars.vars[2].type.has_value());
     if(vars.vars[2].type)
     {
-      ut::expect(*vars.vars[2].type == "Object");
+      ut::expect(boost::get<vb6_ast::NativeType>(vars.vars[2].type->value.get()) == vb6_ast::NativeType::Object);
     }
 
     ut::expect(vars.vars[3].name == "ptr");
@@ -376,7 +383,11 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(vars.vars[3].type.has_value());
     if(vars.vars[3].type)
     {
-      ut::expect(*vars.vars[3].type == "MyRec");
+      auto const& user_type =
+        boost::get<vb6_ast::complex_type_identifier>(vars.vars[3].type->value.get());
+      ut::expect(user_type.library_or_module.has_value());
+      ut::expect(*user_type.library_or_module == "Module");
+      ut::expect(user_type.name == "MyRec");
     }
 
     ut::expect(vars.vars[4].name == "g_active");
@@ -384,7 +395,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(vars.vars[4].type.has_value());
     if(vars.vars[4].type)
     {
-      ut::expect(*vars.vars[4].type == "Boolean");
+      ut::expect(boost::get<vb6_ast::NativeType>(vars.vars[4].type->value.get()) == vb6_ast::NativeType::Boolean);
     }
   };
 
@@ -401,7 +412,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(cvars[0].var.name == "e");
     if(cvars[0].var.type)
     {
-      ut::expect(*cvars[0].var.type == "Single");
+      ut::expect(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()) == vb6_ast::NativeType::Single);
     }
     ut::expect(!cvars[0].var.construct);
     ut::expect(boost::get<float>(cvars[0].value.get()) == 2.8f);
@@ -409,7 +420,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(cvars[1].var.name == "pi");
     if(cvars[1].var.type)
     {
-      ut::expect(*cvars[1].var.type == "Double");
+      ut::expect(boost::get<vb6_ast::NativeType>(cvars[1].var.type->value.get()) == vb6_ast::NativeType::Double);
     }
     ut::expect(!cvars[1].var.construct);
     ut::expect(boost::get<float>(cvars[1].value.get()) == 3.14f);
@@ -417,7 +428,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(cvars[2].var.name == "u");
     if(cvars[2].var.type)
     {
-      ut::expect(*cvars[2].var.type == "Integer");
+      ut::expect(boost::get<vb6_ast::NativeType>(cvars[2].var.type->value.get()) == vb6_ast::NativeType::Integer);
     }
     ut::expect(!cvars[2].var.construct);
     ut::expect(boost::get<vb6_ast::integer_dec>(cvars[2].value.get()).val == -1);
@@ -436,7 +447,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(cvars[0].var.name == "PI");
     if(cvars[0].var.type)
     {
-      ut::expect(*cvars[0].var.type == "Double");
+      ut::expect(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()) == vb6_ast::NativeType::Double);
     }
     ut::expect(!cvars[0].var.construct);
     ut::expect(boost::get<float>(cvars[0].value.get()) == 3.1415f);
@@ -460,7 +471,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(fp.var.type.has_value());
     if(fp.var.type)
     {
-      ut::expect(*fp.var.type == "String");
+      ut::expect(boost::get<vb6_ast::NativeType>(fp.var.type->value.get()) == vb6_ast::NativeType::String);
     }
     ut::expect(fp.defvalue.has_value());
     if(fp.defvalue)
@@ -490,7 +501,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(fps[0].var.type.has_value());
     if(fps[0].var.type)
     {
-      ut::expect(*fps[0].var.type == "String");
+      ut::expect(boost::get<vb6_ast::NativeType>(fps[0].var.type->value.get()) == vb6_ast::NativeType::String);
     }
     ut::expect(!fps[0].defvalue);
 
@@ -505,7 +516,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(fps[1].var.type.has_value());
     if(fps[1].var.type)
     {
-      ut::expect(*fps[1].var.type == "Integer");
+      ut::expect(boost::get<vb6_ast::NativeType>(fps[1].var.type->value.get()) == vb6_ast::NativeType::Integer);
     }
     ut::expect(!fps[1].defvalue);
   };
@@ -536,7 +547,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(fh.name == "OneFunc");
     ut::expect(fh.params.size() == 2);
     ut::expect(fh.return_type.has_value());
-    ut::expect(*fh.return_type == "Integer");
+    ut::expect(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Integer);
   };
 
   ut::test("function_head_no_params") = []
@@ -551,7 +562,23 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(fh.name == "NoParamFunc");
     ut::expect(fh.params.empty());
     ut::expect(fatal(fh.return_type.has_value()));
-    ut::expect(*fh.return_type == "Object");
+    ut::expect(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Object);
+  };
+
+  ut::test("function_head_qualified_return_type") = []
+  {
+    vb6_ast::functionHead fh;
+    auto [res, sv] = test_grammar(
+      "Private Function GetForm() As vB.fOrm\r\n", vb6_grammar::functionHead, fh);
+    ut::expect(fatal(res)) << "stopped at: " << sv;
+    ut::expect(sv.empty());
+    ut::expect(fatal(fh.return_type.has_value()));
+
+    auto const& return_type =
+      boost::get<vb6_ast::complex_type_identifier>(fh.return_type->value.get());
+    ut::expect(return_type.library_or_module.has_value());
+    ut::expect(*return_type.library_or_module == "vB");
+    ut::expect(return_type.name == "fOrm");
   };
 
   ut::test("subroutine_head") = []
@@ -600,7 +627,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(sh.params[0].var.name == "str");
     if(sh.params[0].var.type)
     {
-      ut::expect(*sh.params[0].var.type == "String");
+      ut::expect(boost::get<vb6_ast::NativeType>(sh.params[0].var.type->value.get()) == vb6_ast::NativeType::String);
     }
     ut::expect(!sh.params[0].var.construct);
     ut::expect(!sh.params[0].isoptional);
@@ -614,7 +641,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(sh.params[1].var.name == "valid");
     if(sh.params[1].var.type)
     {
-      ut::expect(*sh.params[1].var.type == "Boolean");
+      ut::expect(boost::get<vb6_ast::NativeType>(sh.params[1].var.type->value.get()) == vb6_ast::NativeType::Boolean);
     }
     ut::expect(!sh.params[1].var.construct);
     ut::expect(sh.params[1].isoptional);
@@ -649,8 +676,8 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(ast.at == vb6_ast::access_type::public_);
     ut::expect(ast.name == "Width");
     ut::expect(ast.params.size() == 0);
-    ut::expect(fatal(ast.return_type));
-    ut::expect(*ast.return_type == "Integer");
+    ut::expect(fatal(ast.return_type.has_value()));
+    ut::expect(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
   };
 
   ut::test("dll_subroutine_declaration") = []
@@ -681,7 +708,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(extfunc.return_type.has_value());
     if(extfunc.return_type)
     {
-      ut::expect(*extfunc.return_type == "Long");
+      ut::expect(boost::get<vb6_ast::NativeType>(extfunc.return_type->value.get()) == vb6_ast::NativeType::Long);
     }
     ut::expect(extfunc.alias == "Beep");
     ut::expect(extfunc.params.size() == 2);
@@ -954,7 +981,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(vars.vars[0].type.has_value());
     if(vars.vars[0].type)
     {
-      ut::expect(*vars.vars[0].type == "Long");
+      ut::expect(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()) == vb6_ast::NativeType::Long);
     }
   };
 };

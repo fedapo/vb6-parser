@@ -90,7 +90,10 @@ TEST_CASE("LocalVarDecl_1", "[vb6_parser_statements]")
   CHECK(st.vars[0].construct);
   CHECK(st.vars[0].name == "var");
   REQUIRE(st.vars[0].type.has_value());
-  CHECK(*st.vars[0].type == "Form");
+  auto const& form_type =
+    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value.get());
+  CHECK(!form_type.library_or_module.has_value());
+  CHECK(form_type.name == "Form");
 }
 
 TEST_CASE("LocalVarDecl_2", "[vb6_parser_statements]")
@@ -108,12 +111,12 @@ TEST_CASE("LocalVarDecl_2", "[vb6_parser_statements]")
   CHECK(!st.vars[0].construct);
   CHECK(st.vars[0].name == "var1");
   REQUIRE(st.vars[0].type.has_value());
-  CHECK(*st.vars[0].type == "String");
+  CHECK(boost::get<vb6_ast::NativeType>(st.vars[0].type->value.get()) == vb6_ast::NativeType::String);
 
   CHECK(!st.vars[1].construct);
   CHECK(st.vars[1].name == "var2");
   REQUIRE(st.vars[1].type.has_value());
-  CHECK(*st.vars[1].type == "Integer");
+  CHECK(boost::get<vb6_ast::NativeType>(st.vars[1].type->value.get()) == vb6_ast::NativeType::Integer);
 }
 
 TEST_CASE("ReDim", "[vb6_parser_statements]")

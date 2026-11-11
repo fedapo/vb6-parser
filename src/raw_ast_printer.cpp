@@ -53,7 +53,7 @@ void raw_ast_printer::operator()(vb6_ast::variable const& ast) const
 
   if(ast.type)
   {
-    os << " " << *ast.type;
+    os << " " << vb6_ast::type_identifier_spelling(*ast.type);
     if(ast.construct)
       os << " new";
     //if(ast.library_or_module)
@@ -156,9 +156,8 @@ void raw_ast_printer::operator()(vb6_ast::const_var_stat const& ast) const
       os << ", ";
 
     os << el.var.name;
-    //os << " As " << (el.var.type ? *el.var.type : "<unspecified>");
     if(el.var.type)
-      os << " As " << *el.var.type;
+      os << " As " << vb6_ast::type_identifier_spelling(*el.var.type);
     os << " = ";
     (*this)(el.value);
   }
@@ -230,9 +229,8 @@ void raw_ast_printer::operator()(vb6_ast::func_param const& ast) const
     os << (*ast.qualifier == vb6_ast::param_qualifier::byref ? "ByRef" : "ByVal") << " ";
 
   os << ast.var.name;
-  //os << " As " << (ast.var.type ? *ast.var.type : "<unspecified>");
   if(ast.var.type)
-    os << " As " << *ast.var.type;
+    os << " As " << vb6_ast::type_identifier_spelling(*ast.var.type);
 
   if(ast.defvalue)
   {
@@ -321,7 +319,7 @@ void raw_ast_printer::operator()(vb6_ast::functionHead const& ast) const
   }
   os << ")";
   if(ast.return_type)
-    os << " As " << *ast.return_type;
+    os << " As " << vb6_ast::type_identifier_spelling(*ast.return_type);
 
   os << ")\n";
 }
@@ -384,7 +382,7 @@ void raw_ast_printer::operator()(vb6_ast::propertyGetHead const& ast) const
   }
   os << ")";
   if(ast.return_type)
-    os << " As " << *ast.return_type;
+    os << " As " << vb6_ast::type_identifier_spelling(*ast.return_type);
 
   os << ")\n";
 }
@@ -437,7 +435,7 @@ void raw_ast_printer::operator()(vb6_ast::externalFunction const& ast) const
   }
   os << ")";
   if(ast.return_type)
-    os << " As " << *ast.return_type;
+    os << " As " << vb6_ast::type_identifier_spelling(*ast.return_type);
 
   os << ")\n";
 }
@@ -652,7 +650,7 @@ void raw_ast_printer::operator()(vb6_ast::statements::localVarDeclStmt const& as
       os << " As ";
       if(el.construct)
         os << "New ";
-      os << *el.type;
+      os << vb6_ast::type_identifier_spelling(*el.type);
     }
     //else
     //  os << " As <unspecified>";

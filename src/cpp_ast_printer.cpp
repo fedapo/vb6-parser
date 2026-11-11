@@ -4,7 +4,6 @@
 
 #include "cpp_ast_printer.hpp"
 
-#include <boost/optional/optional_io.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
 using namespace std;
@@ -46,7 +45,8 @@ void cpp_ast_printer::operator()(vb6_ast::variable const& ast) const
 {
   //if(ast.library_or_module)
   //  os << *ast.library_or_module << "::";
-  os << (ast.type ? *ast.type : "std::any") << " " << ast.name << ";";
+  os << (ast.type ? vb6_ast::type_identifier_spelling(*ast.type) : "std::any")
+     << " " << ast.name << ";";
 }
 
 void cpp_ast_printer::operator()(vb6_ast::decorated_variable const& ast) const
@@ -126,7 +126,7 @@ void cpp_ast_printer::operator()(vb6_ast::const_var_stat const& cvars) const
     else
       os << ", ";
 
-    os << (el.var.type ? *el.var.type : "std::any")
+    os << (el.var.type ? vb6_ast::type_identifier_spelling(*el.var.type) : "std::any")
        << el.var.name << " = ";
     (*this)(el.value);
   }
@@ -181,7 +181,7 @@ void cpp_ast_printer::operator()(vb6_ast::vb_enum const& ast) const
 
 void cpp_ast_printer::operator()(vb6_ast::func_param const& ast) const
 {
-  os << (ast.var.type ? *ast.var.type : "std::any");
+  os << (ast.var.type ? vb6_ast::type_identifier_spelling(*ast.var.type) : "std::any");
 
   if(!ast.qualifier || *ast.qualifier == vb6_ast::param_qualifier::byref)
     os << "&";
@@ -250,7 +250,8 @@ void cpp_ast_printer::operator()(vb6_ast::eventHead const& ast) const
 void cpp_ast_printer::operator()(vb6_ast::functionHead const& ast) const
 {
   print_type(ast.at);
-  os << ast.return_type << " " << ast.name << "(";
+  os << (ast.return_type ? vb6_ast::type_identifier_spelling(*ast.return_type) : "std::any")
+     << " " << ast.name << "(";
   bool first = true;
   for(auto& el : ast.params)
   {
@@ -301,7 +302,8 @@ void cpp_ast_printer::operator()(vb6_ast::propertySetHead const& ast) const
 void cpp_ast_printer::operator()(vb6_ast::propertyGetHead const& ast) const
 {
   print_type(ast.at);
-  os << ast.return_type << " get_" << ast.name << "(";
+  os << (ast.return_type ? vb6_ast::type_identifier_spelling(*ast.return_type) : "std::any")
+     << " get_" << ast.name << "(";
   bool first = true;
   for(auto& el : ast.params)
   {
@@ -314,7 +316,7 @@ void cpp_ast_printer::operator()(vb6_ast::propertyGetHead const& ast) const
   }
   os << ")";
   if(ast.return_type)
-    os << " As " << *ast.return_type;
+    os << " As " << vb6_ast::type_identifier_spelling(*ast.return_type);
   os << '\n';
 }
 
@@ -334,7 +336,7 @@ void cpp_ast_printer::operator()(vb6_ast::externalFunction const& ast) const
 {
   print_type(ast.at);
   os << "__declspec(dllimport)\n"
-     << *ast.return_type << " " << ast.name << "(";
+     << vb6_ast::type_identifier_spelling(*ast.return_type) << " " << ast.name << "(";
   bool first = true;
   for(auto& el : ast.params)
   {
@@ -489,7 +491,8 @@ void cpp_ast_printer::operator()(vb6_ast::statements::localVarDeclStmt const& as
     else
       os << ", ";
 
-    os << (el.type ? *el.type : "std::any") << " " << el.name;
+    os << (el.type ? vb6_ast::type_identifier_spelling(*el.type) : "std::any")
+       << " " << el.name;
   }
   os << ";\n";
 }

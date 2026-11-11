@@ -125,20 +125,28 @@ TEST_CASE("var_identifier")
 
 TEST_CASE("type_identifier")
 {
-  std::string type;
-  auto [res, sv] = test_grammar("Long", vb6_grammar::type_identifier, type);
+  vb6_ast::type_identifier type;
+  auto [res, sv] = test_grammar("lOnG", vb6_grammar::type_identifier, type);
   REQUIRE_MESSAGE(res, "stopped at: " << sv);
   CHECK(sv.empty());
-  CHECK_EQ(type, "Long");
+  CHECK_EQ(type.value.get().type(), typeid(vb6_ast::NativeType));
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(type.value.get()), vb6_ast::NativeType::Long);
+
+  auto [any_res, any_sv] = test_grammar("Any", vb6_grammar::type_identifier, type);
+  REQUIRE_MESSAGE(any_res, "stopped at: " << any_sv);
+  CHECK(any_sv.empty());
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(type.value.get()), vb6_ast::NativeType::Any);
 }
 
 TEST_CASE("complex_type_identifier")
 {
-  std::string type;
-  auto [res, sv] = test_grammar("VB.Form", vb6_grammar::complex_type_identifier, type);
+  vb6_ast::complex_type_identifier type;
+  auto [res, sv] = test_grammar("vB.fOrm", vb6_grammar::complex_type_identifier, type);
   REQUIRE_MESSAGE(res, "stopped at: " << sv);
   CHECK(sv.empty());
-  CHECK_EQ(type, "VB.Form");
+  REQUIRE(type.library_or_module.has_value());
+  CHECK_EQ(*type.library_or_module, "vB");
+  CHECK_EQ(type.name, "fOrm");
 }
 
 TEST_CASE("const_expression_non_numeric")
@@ -278,7 +286,7 @@ TEST_CASE("single_var_declaration")
     CHECK(P.type.has_value());
     if(P.type)
     {
-      CHECK_EQ(*P.type, "Long");
+      CHECK_EQ(boost::get<vb6_ast::NativeType>(P.type->value.get()), vb6_ast::NativeType::Long);
     }
   }
 
@@ -293,7 +301,7 @@ TEST_CASE("single_var_declaration")
     CHECK(P.type.has_value());
     if(P.type)
     {
-      CHECK_EQ(*P.type, "String");
+      CHECK_EQ(boost::get<vb6_ast::NativeType>(P.type->value.get()), vb6_ast::NativeType::String);
     }
   }
 }
@@ -318,7 +326,7 @@ TEST_CASE("record_declaration")
   CHECK(rec.members[0].type.has_value());
   if(rec.members[0].type)
   {
-    CHECK_EQ(*rec.members[0].type, "String");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(rec.members[0].type->value.get()), vb6_ast::NativeType::String);
   }
   CHECK(!rec.members[0].construct);
 
@@ -326,7 +334,7 @@ TEST_CASE("record_declaration")
   CHECK(rec.members[1].type.has_value());
   if(rec.members[1].type)
   {
-    CHECK_EQ(*rec.members[1].type, "Integer");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(rec.members[1].type->value.get()), vb6_ast::NativeType::Integer);
   }
   CHECK(!rec.members[1].construct);
 }
@@ -367,7 +375,7 @@ TEST_CASE("global_var_declaration")
   CHECK(vars.vars[0].type.has_value());
   if(vars.vars[0].type)
   {
-    CHECK_EQ(*vars.vars[0].type, "Long");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()), vb6_ast::NativeType::Long);
   }
 
   CHECK_EQ(vars.vars[1].name, "v1");
@@ -379,7 +387,7 @@ TEST_CASE("global_var_declaration")
   CHECK(vars.vars[2].type.has_value());
   if(vars.vars[2].type)
   {
-    CHECK_EQ(*vars.vars[2].type, "Object");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(vars.vars[2].type->value.get()), vb6_ast::NativeType::Object);
   }
 
   CHECK_EQ(vars.vars[3].name, "ptr");
@@ -387,7 +395,11 @@ TEST_CASE("global_var_declaration")
   CHECK(vars.vars[3].type.has_value());
   if(vars.vars[3].type)
   {
-    CHECK_EQ(*vars.vars[3].type, "MyRec");
+    auto const& user_type =
+      boost::get<vb6_ast::complex_type_identifier>(vars.vars[3].type->value.get());
+    REQUIRE(user_type.library_or_module.has_value());
+    CHECK_EQ(*user_type.library_or_module, "Module");
+    CHECK_EQ(user_type.name, "MyRec");
   }
 
   CHECK_EQ(vars.vars[4].name, "g_active");
@@ -395,7 +407,7 @@ TEST_CASE("global_var_declaration")
   CHECK(vars.vars[4].type.has_value());
   if(vars.vars[4].type)
   {
-    CHECK_EQ(*vars.vars[4].type, "Boolean");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(vars.vars[4].type->value.get()), vb6_ast::NativeType::Boolean);
   }
 }
 
@@ -412,7 +424,7 @@ TEST_CASE("const_var_declaration1")
   CHECK_EQ(cvars[0].var.name, "e");
   if(cvars[0].var.type)
   {
-    CHECK_EQ(*cvars[0].var.type, "Single");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()), vb6_ast::NativeType::Single);
   }
   CHECK(!cvars[0].var.construct);
   CHECK_EQ(boost::get<float>(cvars[0].value.get()), 2.8f);
@@ -420,7 +432,7 @@ TEST_CASE("const_var_declaration1")
   CHECK_EQ(cvars[1].var.name, "pi");
   if(cvars[1].var.type)
   {
-    CHECK_EQ(*cvars[1].var.type, "Double");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(cvars[1].var.type->value.get()), vb6_ast::NativeType::Double);
   }
   CHECK(!cvars[1].var.construct);
   CHECK_EQ(boost::get<float>(cvars[1].value.get()), 3.14f);
@@ -428,7 +440,7 @@ TEST_CASE("const_var_declaration1")
   CHECK_EQ(cvars[2].var.name, "u");
   if(cvars[2].var.type)
   {
-    CHECK_EQ(*cvars[2].var.type, "Integer");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(cvars[2].var.type->value.get()), vb6_ast::NativeType::Integer);
   }
   CHECK(!cvars[2].var.construct);
   CHECK_EQ(boost::get<vb6_ast::integer_dec>(cvars[2].value.get()).val, -1);
@@ -447,7 +459,7 @@ TEST_CASE("const_var_declaration2")
   CHECK_EQ(cvars[0].var.name, "PI");
   if(cvars[0].var.type)
   {
-    CHECK_EQ(*cvars[0].var.type, "Double");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()), vb6_ast::NativeType::Double);
   }
   CHECK(!cvars[0].var.construct);
   CHECK_EQ(boost::get<float>(cvars[0].value.get()), 3.1415f);
@@ -471,7 +483,7 @@ TEST_CASE("param_decl")
   CHECK(fp.var.type.has_value());
   if(fp.var.type)
   {
-    CHECK_EQ(*fp.var.type, "String");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(fp.var.type->value.get()), vb6_ast::NativeType::String);
   }
   CHECK(fp.defvalue.has_value());
   if(fp.defvalue)
@@ -501,7 +513,7 @@ TEST_CASE("param_list_decl")
   CHECK(fps[0].var.type.has_value());
   if(fps[0].var.type)
   {
-    CHECK_EQ(*fps[0].var.type, "String");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(fps[0].var.type->value.get()), vb6_ast::NativeType::String);
   }
   CHECK(!fps[0].defvalue);
 
@@ -516,7 +528,7 @@ TEST_CASE("param_list_decl")
   CHECK(fps[1].var.type.has_value());
   if(fps[1].var.type)
   {
-    CHECK_EQ(*fps[1].var.type, "Integer");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(fps[1].var.type->value.get()), vb6_ast::NativeType::Integer);
   }
   CHECK(!fps[1].defvalue);
 }
@@ -547,7 +559,7 @@ TEST_CASE("function_head")
   CHECK_EQ(fh.name, "OneFunc");
   CHECK_EQ(fh.params.size(), 2);
   REQUIRE(fh.return_type.has_value());
-  CHECK_EQ(*fh.return_type, "Integer");
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()), vb6_ast::NativeType::Integer);
 }
 
 TEST_CASE("function_head_no_params")
@@ -562,7 +574,23 @@ TEST_CASE("function_head_no_params")
   CHECK_EQ(fh.name, "NoParamFunc");
   CHECK(fh.params.empty());
   REQUIRE(fh.return_type.has_value());
-  CHECK_EQ(*fh.return_type, "Object");
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()), vb6_ast::NativeType::Object);
+}
+
+TEST_CASE("function_head_qualified_return_type")
+{
+  vb6_ast::functionHead fh;
+  auto [res, sv] = test_grammar(
+    "Private Function GetForm() As vB.fOrm\r\n", vb6_grammar::functionHead, fh);
+  REQUIRE_MESSAGE(res, "stopped at: " << sv);
+  CHECK(sv.empty());
+  REQUIRE(fh.return_type.has_value());
+
+  auto const& return_type =
+    boost::get<vb6_ast::complex_type_identifier>(fh.return_type->value.get());
+  REQUIRE(return_type.library_or_module.has_value());
+  CHECK_EQ(*return_type.library_or_module, "vB");
+  CHECK_EQ(return_type.name, "fOrm");
 }
 
 TEST_CASE("subroutine_head")
@@ -611,7 +639,7 @@ TEST_CASE("subroutine_head_with_optional_params")
   CHECK_EQ(sh.params[0].var.name, "str");
   if(sh.params[0].var.type)
   {
-    CHECK_EQ(*sh.params[0].var.type, "String");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(sh.params[0].var.type->value.get()), vb6_ast::NativeType::String);
   }
   CHECK(!sh.params[0].var.construct);
   CHECK(!sh.params[0].isoptional);
@@ -625,7 +653,7 @@ TEST_CASE("subroutine_head_with_optional_params")
   CHECK_EQ(sh.params[1].var.name, "valid");
   if(sh.params[1].var.type)
   {
-    CHECK_EQ(*sh.params[1].var.type, "Boolean");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(sh.params[1].var.type->value.get()), vb6_ast::NativeType::Boolean);
   }
   CHECK(!sh.params[1].var.construct);
   CHECK(sh.params[1].isoptional);
@@ -660,8 +688,8 @@ TEST_CASE("property_get_head")
   CHECK_EQ(ast.at, vb6_ast::access_type::public_);
   CHECK_EQ(ast.name, "Width");
   CHECK_EQ(ast.params.size(), 0);
-  REQUIRE(ast.return_type);
-  CHECK_EQ(*ast.return_type, "Integer");
+  REQUIRE(ast.return_type.has_value());
+  CHECK_EQ(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()), vb6_ast::NativeType::Integer);
 }
 
 TEST_CASE("dll_subroutine_declaration")
@@ -692,7 +720,7 @@ TEST_CASE("dll_function_declaration")
   CHECK(extfunc.return_type.has_value());
   if(extfunc.return_type)
   {
-    CHECK_EQ(*extfunc.return_type, "Long");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(extfunc.return_type->value.get()), vb6_ast::NativeType::Long);
   }
   CHECK_EQ(extfunc.alias, "Beep");
   CHECK_EQ(extfunc.params.size(), 2);
@@ -964,7 +992,7 @@ TEST_CASE("trailing_comment")
   CHECK(vars.vars[0].type.has_value());
   if(vars.vars[0].type)
   {
-    CHECK_EQ(*vars.vars[0].type, "Long");
+    CHECK_EQ(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()), vb6_ast::NativeType::Long);
   }
 }
 
