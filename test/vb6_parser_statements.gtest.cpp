@@ -1,5 +1,5 @@
 // VB6 Parser
-// Copyright (c) 2018-2025 Federico Aponte
+// Copyright (c) 2018-2026 Federico Aponte
 // SPDX-License-Identifier:	GPL-3.0-only
 
 #include "test_grammar_helper.hpp"
