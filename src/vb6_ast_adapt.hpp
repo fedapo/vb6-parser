@@ -58,6 +58,21 @@ BOOST_FUSION_ADAPT_STRUCT(vb6_ast::func_call,
     params
 )
 
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::unary_expression,
+    op,
+    operand
+)
+
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::binary_operation,
+    op,
+    operand
+)
+
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::binary_expression,
+    lhs,
+    rest
+)
+
 BOOST_FUSION_ADAPT_STRUCT(vb6_ast::global_var_decls,
     at,
     with_events,

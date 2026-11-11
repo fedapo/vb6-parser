@@ -22,6 +22,8 @@ public:
   void operator()(vb6_ast::const_expr const&) const;
   void operator()(vb6_ast::expression const&) const;
   void operator()(vb6_ast::func_call const&) const;
+  void operator()(vb6_ast::unary_expression const&) const;
+  void operator()(vb6_ast::binary_expression const&) const;
   void operator()(vb6_ast::global_var_decls const&) const;
   void operator()(vb6_ast::const_var_stat const&) const;
   void operator()(vb6_ast::record const&) const;

@@ -290,12 +290,39 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
 TEST_CASE("sample_expression", "[vb6_parser_simple]")
 {
   vb6_ast::expression ast;
-  auto [res, sv] = test_grammar("foo1(foo2(3, M.x_coord), True)", vb6_grammar::expression, ast);
+  auto [res, sv] =
+    test_grammar("foo1(foo2(3 + foo3(4), M.x_coord), True)", vb6_grammar::expression, ast);
   INFO("stopped at: " << sv);
   REQUIRE(res);
   CHECK(sv.empty());
   CHECK(ast.get().type() == typeid(x3::forward_ast<vb6_ast::func_call>));
-  CHECK(boost::get<x3::forward_ast<vb6_ast::func_call>>(ast.get()).get().func_name == "foo1");
+  auto const& outer = boost::get<x3::forward_ast<vb6_ast::func_call>>(ast.get()).get();
+  CHECK(outer.func_name == "foo1");
+  REQUIRE(outer.params.size() == 2);
+
+  REQUIRE(outer.params[0].get().type() == typeid(x3::forward_ast<vb6_ast::func_call>));
+  auto const& inner =
+    boost::get<x3::forward_ast<vb6_ast::func_call>>(outer.params[0].get()).get();
+  CHECK(inner.func_name == "foo2");
+  REQUIRE(inner.params.size() == 2);
+
+  REQUIRE(inner.params[0].get().type() == typeid(x3::forward_ast<vb6_ast::binary_expression>));
+  auto const& sum =
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(inner.params[0].get()).get();
+  REQUIRE(sum.rest.size() == 1);
+  CHECK(sum.rest[0].op == vb6_ast::operator_type::plus);
+  auto const& integer = boost::get<vb6_ast::const_expr>(sum.lhs.get());
+  CHECK(boost::get<vb6_ast::integer_dec>(integer.get()).val == 3);
+  REQUIRE(sum.rest[0].operand.get().type() == typeid(x3::forward_ast<vb6_ast::func_call>));
+  auto const& operand_call =
+    boost::get<x3::forward_ast<vb6_ast::func_call>>(sum.rest[0].operand.get()).get();
+  CHECK(operand_call.func_name == "foo3");
+  REQUIRE(operand_call.params.size() == 1);
+  auto const& operand_arg = boost::get<vb6_ast::const_expr>(operand_call.params[0].get());
+  CHECK(boost::get<vb6_ast::integer_dec>(operand_arg.get()).val == 4);
+  auto const& member = boost::get<vb6_ast::decorated_variable>(inner.params[1].get());
+  CHECK(member.ctx.elements.size() == 1);
+  CHECK(member.var == "x_coord");
 }
 
 TEST_CASE("single_var_declaration", "[vb6_parser_simple]")

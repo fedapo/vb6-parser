@@ -65,10 +65,44 @@ enum class operator_type
   imp,
   not_, // unary
   and_,
+  or_,
   xor_,
+  eqv,
   is,
   like
 };
+
+inline std::string_view operator_spelling(operator_type op)
+{
+  switch(op)
+  {
+    case operator_type::less: return "<";
+    case operator_type::greater: return ">";
+    case operator_type::less_equal: return "<=";
+    case operator_type::greater_equal: return ">=";
+    case operator_type::equal: return "=";
+    case operator_type::not_equal:
+    case operator_type::diff: return "<>";
+    case operator_type::plus: return "+";
+    case operator_type::minus: return "-";
+    case operator_type::mult: return "*";
+    case operator_type::div: return "/";
+    case operator_type::div_int: return "\\";
+    case operator_type::exp: return "^";
+    case operator_type::assign: return "=";
+    case operator_type::amp: return "&";
+    case operator_type::mod: return "Mod";
+    case operator_type::imp: return "Imp";
+    case operator_type::not_: return "Not";
+    case operator_type::and_: return "And";
+    case operator_type::or_: return "Or";
+    case operator_type::xor_: return "Xor";
+    case operator_type::eqv: return "Eqv";
+    case operator_type::is: return "Is";
+    case operator_type::like: return "Like";
+  }
+  return {};
+}
 
 enum class access_type
 {
@@ -145,6 +179,8 @@ enum class module_option
 };
 
 struct func_call;
+struct unary_expression;
+struct binary_expression;
 
 struct nothing
 {
@@ -286,7 +322,9 @@ struct vb_enum : x3::position_tagged
 struct expression : x3::variant<
                       const_expr,
                       decorated_variable,
-                      x3::forward_ast<func_call>>
+                      x3::forward_ast<func_call>,
+                      x3::forward_ast<unary_expression>,
+                      x3::forward_ast<binary_expression>>
 {
   using base_type::base_type;
   using base_type::operator=;
@@ -296,6 +334,25 @@ struct func_call : x3::position_tagged
 {
   std::string func_name;
   std::vector<expression> params;
+};
+
+struct unary_expression : x3::position_tagged
+{
+  operator_type op;
+  expression operand;
+};
+
+struct binary_operation : x3::position_tagged
+{
+  operator_type op;
+  expression operand;
+};
+
+struct binary_expression : x3::position_tagged
+{
+  expression lhs;
+  // Same-precedence operators in source order; evaluate the chain left-to-right.
+  std::vector<binary_operation> rest;
 };
 
 // Ex.: Optional ByVal flag As Boolean = True

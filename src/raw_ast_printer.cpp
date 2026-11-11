@@ -143,6 +143,30 @@ void raw_ast_printer::operator()(vb6_ast::expression const& ast) const
   os << ")\n";
 }
 
+void raw_ast_printer::operator()(vb6_ast::unary_expression const& ast) const
+{
+  os << string(indent, ' ') << '(' << typeid(ast).name()
+     << ' ' << vb6_ast::operator_spelling(ast.op) << '\n';
+  indent += indent_size;
+  (*this)(ast.operand);
+  indent -= indent_size;
+  os << string(indent, ' ') << ")\n";
+}
+
+void raw_ast_printer::operator()(vb6_ast::binary_expression const& ast) const
+{
+  os << string(indent, ' ') << '(' << typeid(ast).name() << '\n';
+  indent += indent_size;
+  (*this)(ast.lhs);
+  for(auto const& operation : ast.rest)
+  {
+    os << string(indent, ' ') << vb6_ast::operator_spelling(operation.op) << '\n';
+    (*this)(operation.operand);
+  }
+  indent -= indent_size;
+  os << string(indent, ' ') << ")\n";
+}
+
 void raw_ast_printer::operator()(vb6_ast::const_var_stat const& ast) const
 {
   os << string(indent, ' ') << '(' << typeid(ast).name();

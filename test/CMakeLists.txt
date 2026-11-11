@@ -5,6 +5,7 @@ find_package(ut REQUIRED)
 
 add_executable(vb6_parser.ut
     vb6_parser.ut.cpp
+    vb6_parser_expressions.ut.cpp
 )
 
 target_link_libraries(vb6_parser.ut
@@ -18,6 +19,7 @@ PRIVATE
 
 add_executable(vb6_parser.doctest
     vb6_parser.doctest.cpp
+    vb6_parser_expressions.doctest.cpp
     vb6_parser_statements.doctest.cpp
 )
 
@@ -32,6 +34,7 @@ PRIVATE
 
 add_executable(vb6_parser.catch
     vb6_parser.catch.cpp
+    vb6_parser_expressions.catch.cpp
     vb6_parser_statements.catch.cpp
 )
 
@@ -46,6 +49,7 @@ PRIVATE
 
 add_executable(vb6_parser.gtest
     vb6_parser.gtest.cpp
+    vb6_parser_expressions.gtest.cpp
     vb6_parser_statements.gtest.cpp
     vb6_parser_test_main.cpp
 )

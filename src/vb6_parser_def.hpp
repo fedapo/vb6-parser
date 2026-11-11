@@ -286,11 +286,6 @@ namespace vb6_grammar {
 
   //auto const decorated_functionCall = x3::omit[identifier_context] >> functionCall;
 
-  auto const expression_def = const_expression
-                            | functionCall
-                            | decorated_variable
-                            ;
-
   auto const enum_declaration_def = private_or_public >> kwEnum >> enum_identifier >> cmdTermin
                                  >> +(basic_identifier >> -(opEqual >> const_expression) >> cmdTermin) // FED ???? basic_identifier?
                                  >> kwgEndEnum;
@@ -337,6 +332,175 @@ namespace vb6_grammar {
                                  >> cmdTermin;;
 
   auto const functionCall_def = func_identifier >> '(' >> -(expression % ',') >> ')';
+
+  namespace expression_grammar
+  {
+    using unary_expression_type            = x3::rule<class unary_expression_class, vb6_ast::expression>;
+    using signed_expression_type           = x3::rule<class signed_expression_class, vb6_ast::expression>;
+    using power_expression_type            = x3::rule<class power_expression_class, vb6_ast::expression>;
+    using multiplication_expression_type   = x3::rule<class multiplication_expression_class, vb6_ast::expression>;
+    using integer_division_expression_type = x3::rule<class integer_division_expression_class, vb6_ast::expression>;
+    using modulo_expression_type           = x3::rule<class modulo_expression_class, vb6_ast::expression>;
+    using addition_expression_type         = x3::rule<class addition_expression_class, vb6_ast::expression>;
+    using concatenation_expression_type    = x3::rule<class concatenation_expression_class, vb6_ast::expression>;
+    using relational_expression_type       = x3::rule<class relational_expression_class, vb6_ast::expression>;
+    using not_expression_type              = x3::rule<class not_expression_class, vb6_ast::expression>;
+    using logical_and_expression_type      = x3::rule<class logical_and_expression_class, vb6_ast::expression>;
+    using logical_or_expression_type       = x3::rule<class logical_or_expression_class, vb6_ast::expression>;
+    using logical_xor_expression_type      = x3::rule<class logical_xor_expression_class, vb6_ast::expression>;
+    using eqv_expression_type              = x3::rule<class eqv_expression_class, vb6_ast::expression>;
+    using imp_expression_type              = x3::rule<class imp_expression_class, vb6_ast::expression>;
+
+    unary_expression_type            const unary_expression("unary_expression");
+    signed_expression_type           const signed_expression("signed_expression");
+    power_expression_type            const power_expression("power_expression");
+    multiplication_expression_type   const multiplication_expression("multiplication_expression");
+    integer_division_expression_type const integer_division_expression("integer_division_expression");
+    modulo_expression_type           const modulo_expression("modulo_expression");
+    addition_expression_type         const addition_expression("addition_expression");
+    concatenation_expression_type    const concatenation_expression("concatenation_expression");
+    relational_expression_type       const relational_expression("relational_expression");
+    not_expression_type              const not_expression("not_expression");
+    logical_and_expression_type      const logical_and_expression("logical_and_expression");
+    logical_or_expression_type       const logical_or_expression("logical_or_expression");
+    logical_xor_expression_type      const logical_xor_expression("logical_xor_expression");
+    eqv_expression_type              const eqv_expression("eqv_expression");
+    imp_expression_type              const imp_expression("imp_expression");
+
+    auto const primary_expression =
+      x3::rule<class primary_expression_class, vb6_ast::expression>("primary_expression")
+        = functionCall | const_expression | decorated_variable
+        | ('(' >> vb6_grammar::expression >> ')');
+
+    // Keep leaf expressions unwrapped and avoid reparsing lower tiers on fallback.
+    auto const fold_binary_chain = [](auto& ctx)
+    {
+      auto const& attributes = x3::_attr(ctx);
+      auto const& rest = boost::fusion::at_c<1>(attributes);
+      if(rest.empty())
+      {
+        x3::_val(ctx).get() = boost::fusion::at_c<0>(attributes).get();
+      }
+      else
+      {
+        vb6_ast::binary_expression binary;
+        binary.lhs = boost::fusion::at_c<0>(attributes);
+        binary.rest = rest;
+        x3::_val(ctx).get() =
+          x3::forward_ast<vb6_ast::binary_expression>(std::move(binary));
+      }
+    };
+
+    auto const power_tail =
+      x3::rule<class power_tail_class, vb6_ast::binary_operation>("power_tail")
+        = opExp >> x3::attr(vb6_ast::operator_type::exp) >> signed_expression;
+
+    auto const signed_prefix =
+      x3::rule<class signed_prefix_class, vb6_ast::unary_expression>("signed_prefix")
+        = ((opPlus >> x3::attr(vb6_ast::operator_type::plus))
+         | (opMinus >> x3::attr(vb6_ast::operator_type::minus)))
+        >> signed_expression;
+    auto const unary_prefix =
+      x3::rule<class unary_prefix_class, vb6_ast::unary_expression>("unary_prefix")
+        = x3::lexeme[opNot >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::not_) >> not_expression;
+
+    auto const multiplication_tail =
+      x3::rule<class multiplication_tail_class, vb6_ast::binary_operation>("multiplication_tail")
+        = ((opMult >> x3::attr(vb6_ast::operator_type::mult))
+         | (opDiv >> x3::attr(vb6_ast::operator_type::div)))
+       >> unary_expression;
+    auto const integer_division_tail =
+      x3::rule<class integer_division_tail_class, vb6_ast::binary_operation>("integer_division_tail")
+        = opDivint >> x3::attr(vb6_ast::operator_type::div_int)
+       >> multiplication_expression;
+    auto const modulo_tail =
+      x3::rule<class modulo_tail_class, vb6_ast::binary_operation>("modulo_tail")
+        = x3::lexeme[opMod >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::mod) >> integer_division_expression;
+    auto const addition_tail =
+      x3::rule<class addition_tail_class, vb6_ast::binary_operation>("addition_tail")
+        = ((opPlus >> x3::attr(vb6_ast::operator_type::plus))
+         | (opMinus >> x3::attr(vb6_ast::operator_type::minus)))
+       >> modulo_expression;
+    auto const concatenation_tail =
+      x3::rule<class concatenation_tail_class, vb6_ast::binary_operation>("concatenation_tail")
+        = opAmp >> x3::attr(vb6_ast::operator_type::amp) >> addition_expression;
+    auto const relational_tail =
+      x3::rule<class relational_tail_class, vb6_ast::binary_operation>("relational_tail")
+        = ((opLessEqual >> x3::attr(vb6_ast::operator_type::less_equal))
+         | (opGreaterEqual >> x3::attr(vb6_ast::operator_type::greater_equal))
+         | (opNotEqual >> x3::attr(vb6_ast::operator_type::not_equal))
+         | (opLess >> x3::attr(vb6_ast::operator_type::less))
+         | (opGreater >> x3::attr(vb6_ast::operator_type::greater))
+         | (opEqual >> x3::attr(vb6_ast::operator_type::equal))
+         | (x3::lexeme[opLike >> !x3::char_("a-zA-Z0-9_£")]
+            >> x3::attr(vb6_ast::operator_type::like))
+         | (x3::lexeme[opIs >> !x3::char_("a-zA-Z0-9_£")]
+            >> x3::attr(vb6_ast::operator_type::is)))
+       >> concatenation_expression;
+    auto const and_tail =
+      x3::rule<class and_tail_class, vb6_ast::binary_operation>("and_tail")
+        = x3::lexeme[opAnd >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::and_) >> not_expression;
+    auto const or_tail =
+      x3::rule<class or_tail_class, vb6_ast::binary_operation>("or_tail")
+        = x3::lexeme[opOr >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::or_) >> logical_and_expression;
+    auto const xor_tail =
+      x3::rule<class xor_tail_class, vb6_ast::binary_operation>("xor_tail")
+        = x3::lexeme[opXor >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::xor_) >> logical_or_expression;
+    auto const eqv_tail =
+      x3::rule<class eqv_tail_class, vb6_ast::binary_operation>("eqv_tail")
+        = x3::lexeme[opEqv >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::eqv) >> logical_xor_expression;
+    auto const imp_tail =
+      x3::rule<class imp_tail_class, vb6_ast::binary_operation>("imp_tail")
+        = x3::lexeme[opImp >> !x3::char_("a-zA-Z0-9_£")]
+       >> x3::attr(vb6_ast::operator_type::imp) >> eqv_expression;
+
+#define VB6_BINARY_CHAIN(name, lower, tail) \
+    auto const name##_expression_def = (lower >> *tail)[fold_binary_chain]
+
+    auto const unary_expression_def = signed_expression;
+    auto const signed_expression_def = signed_prefix | power_expression;
+    auto const power_expression_def = (primary_expression >> *power_tail)[fold_binary_chain];
+    VB6_BINARY_CHAIN(multiplication, unary_expression, multiplication_tail);
+    VB6_BINARY_CHAIN(integer_division, multiplication_expression, integer_division_tail);
+    VB6_BINARY_CHAIN(modulo, integer_division_expression, modulo_tail);
+    VB6_BINARY_CHAIN(addition, modulo_expression, addition_tail);
+    VB6_BINARY_CHAIN(concatenation, addition_expression, concatenation_tail);
+    VB6_BINARY_CHAIN(relational, concatenation_expression, relational_tail);
+    auto const not_expression_def = unary_prefix | relational_expression;
+    VB6_BINARY_CHAIN(logical_and, not_expression, and_tail);
+    VB6_BINARY_CHAIN(logical_or, logical_and_expression, or_tail);
+    VB6_BINARY_CHAIN(logical_xor, logical_or_expression, xor_tail);
+    VB6_BINARY_CHAIN(eqv, logical_xor_expression, eqv_tail);
+    VB6_BINARY_CHAIN(imp, eqv_expression, imp_tail);
+
+#undef VB6_BINARY_CHAIN
+
+    BOOST_SPIRIT_DEFINE(
+        unary_expression
+      , signed_expression
+      , power_expression
+      , multiplication_expression
+      , integer_division_expression
+      , modulo_expression
+      , addition_expression
+      , concatenation_expression
+      , relational_expression
+      , not_expression
+      , logical_and_expression
+      , logical_or_expression
+      , logical_xor_expression
+      , eqv_expression
+      , imp_expression
+    )
+  } // namespace expression_grammar
+
+  auto const expression_def = expression_grammar::imp_expression;
 
   //auto const decorated_functionCall = x3::omit[identifier_context] >> functionCall;
 

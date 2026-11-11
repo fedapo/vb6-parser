@@ -244,17 +244,6 @@ GTEST_TEST(vb6_parser_simple, const_expression_floats)
   }
 }
 
-GTEST_TEST(vb6_parser_simple, sample_expression)
-{
-  vb6_ast::expression ast;
-  auto [res, sv] = test_grammar("foo1(foo2(3, M.x_coord), True)", vb6_grammar::expression, ast);
-  ASSERT_TRUE(res) << "stopped at: " << sv;
-  EXPECT_TRUE(sv.empty());
-
-  EXPECT_EQ(ast.get().type(), typeid(x3::forward_ast<vb6_ast::func_call>));
-  EXPECT_EQ(boost::get<x3::forward_ast<vb6_ast::func_call>>(ast.get()).get().func_name, "foo1");
-}
-
 GTEST_TEST(vb6_parser_simple, single_var_declaration)
 {
   {

@@ -115,6 +115,31 @@ void cpp_ast_printer::operator()(vb6_ast::expression const& ast) const
   boost::apply_visitor(*this, ast.get());
 }
 
+void cpp_ast_printer::operator()(vb6_ast::unary_expression const& ast) const
+{
+  auto const op = vb6_ast::operator_spelling(ast.op);
+  os << op;
+  if(ast.op == vb6_ast::operator_type::not_)
+    os << ' ';
+  os << '(';
+  (*this)(ast.operand);
+  os << ')';
+}
+
+void cpp_ast_printer::operator()(vb6_ast::binary_expression const& ast) const
+{
+  os << '(';
+  (*this)(ast.lhs);
+  os << ')';
+  for(auto const& operation : ast.rest)
+  {
+    os << ' ' << vb6_ast::operator_spelling(operation.op) << ' ';
+    os << '(';
+    (*this)(operation.operand);
+    os << ')';
+  }
+}
+
 void cpp_ast_printer::operator()(vb6_ast::const_var_stat const& cvars) const
 {
   os << "Const ";
