@@ -615,17 +615,10 @@ struct if_branch : x3::position_tagged
   statement_block block;
 };
 
-// TODO
 struct ifelseStmt : x3::position_tagged
 {
-  //expression condition;
-  //statement_block block;
-#ifdef SIMPLE_IF_STATEMENT
-  if_branch first_branch;
-#else
   if_branch first_branch;
   std::vector<if_branch> if_branches;
-#endif
   boost::optional<statement_block> else_branch;
 };
 

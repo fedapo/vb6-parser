@@ -805,18 +805,7 @@ void vb6_ast_printer::operator()(vb6_ast::statements::foreachStmt const& ast) co
 
 void vb6_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) const
 {
-#ifdef SIMPLE_IF_STATEMENT
-  os << "If ";
-  (*this)(ast.first_branch.condition);
-  os << " Then\n";
-
-  // statements
-  indent += indent_size;
-  for(auto& st : ast.first_branch.block)
-    (*this)(st);
-  indent -= indent_size;
-#else
-  os << "If ";
+  os << string(indent, ' ') << "If ";
   (*this)(ast.first_branch.condition);
   os << " Then\n";
 
@@ -846,7 +835,6 @@ void vb6_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) con
       (*this)(st);
     indent -= indent_size;
   }
-#endif
 
   if(ast.else_branch.has_value())
   {

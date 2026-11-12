@@ -557,11 +557,6 @@ TEST_CASE("IfElse", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-#ifdef SIMPLE_IF_STATEMENT
-  CHECK(ast.first_branch.block.size() == 5);
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
-  CHECK(tmp1.var == "cond1");
-#else
   CHECK(ast.first_branch.block.size() == 1);
   auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
   CHECK(tmp0.var == "cond1");
@@ -575,7 +570,6 @@ TEST_CASE("IfElse", "[vb6_parser_compound_statements]")
   CHECK(ast.if_branches[1].block.size() == 1);
   auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition.get());
   CHECK(tmp2.var == "cond3");
-#endif
 
   REQUIRE(ast.else_branch.has_value());
   CHECK(ast.else_branch.get().size() == 1);

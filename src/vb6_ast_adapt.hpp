@@ -181,18 +181,11 @@ BOOST_FUSION_ADAPT_STRUCT(vb6_ast::statements::if_branch,
     block
 )
 
-#ifdef SIMPLE_IF_STATEMENT
-BOOST_FUSION_ADAPT_STRUCT(vb6_ast::statements::ifelseStmt,
-    first_branch,
-    else_branch
-)
-#else
 BOOST_FUSION_ADAPT_STRUCT(vb6_ast::statements::ifelseStmt,
     first_branch,
     if_branches,
     else_branch
 )
-#endif
 
 BOOST_FUSION_ADAPT_STRUCT(vb6_ast::statements::withStmt,
     with_variable,

@@ -537,11 +537,6 @@ TEST_CASE("IfElse")
   REQUIRE_MESSAGE(res, "stopped at: " << sv);
   CHECK(sv.empty());
 
-#ifdef SIMPLE_IF_STATEMENT
-  CHECK_EQ(ast.first_branch.block.size(), 5);
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
-  CHECK_EQ(tmp1.var, "cond1");
-#else
   CHECK_EQ(ast.first_branch.block.size(), 1);
   auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
   CHECK_EQ(tmp0.var, "cond1");
@@ -555,7 +550,6 @@ TEST_CASE("IfElse")
   CHECK_EQ(ast.if_branches[1].block.size(), 1);
   auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition.get());
   CHECK_EQ(tmp2.var, "cond3");
-#endif
 
   REQUIRE(ast.else_branch.has_value());
   CHECK_EQ(ast.else_branch.get().size(), 1);

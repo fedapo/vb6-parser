@@ -897,15 +897,6 @@ void raw_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) con
 {
   os << string(indent, ' ') << '(' << typeid(ast).name();
 
-#ifdef SIMPLE_IF_STATEMENT
-  (*this)(ast.first_branch.condition);
-
-  // statements
-  indent += indent_size;
-  for(auto& st : ast.first_branch.block)
-    (*this)(st);
-  indent -= indent_size;
-#else
   (*this)(ast.first_branch.condition);
 
   // statements
@@ -934,7 +925,6 @@ void raw_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) con
       (*this)(st);
     indent -= indent_size;
   }
-#endif
 
   if(ast.else_branch.has_value())
   {

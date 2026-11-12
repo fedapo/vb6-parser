@@ -696,13 +696,6 @@ void cpp_ast_printer::operator()(vb6_ast::statements::foreachStmt const& ast) co
 
 void cpp_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) const
 {
-  // TODO
-#ifdef SIMPLE_IF_STATEMENT
-  os << string(indent, ' ') << "if(";
-  //(*this)(ast.first_branch);
-  os << ")\n";
-  print_block(ast.first_branch.block);
-#else
   bool first = true;
   for(auto& el : ast.if_branches)
   {
@@ -720,7 +713,6 @@ void cpp_ast_printer::operator()(vb6_ast::statements::ifelseStmt const& ast) con
     }
     print_block(el.block);
   }
-#endif
 
   if(ast.else_branch.has_value())
   {

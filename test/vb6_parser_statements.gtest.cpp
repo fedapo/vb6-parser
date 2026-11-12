@@ -528,11 +528,6 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-#ifdef SIMPLE_IF_STATEMENT
-  EXPECT_EQ(ast.first_branch.block.size(), 5);
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
-  EXPECT_EQ(tmp1.var, "cond1");
-#else
   EXPECT_EQ(ast.first_branch.block.size(), 1);
   auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
   EXPECT_EQ(tmp0.var, "cond1");
@@ -546,7 +541,6 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse)
   EXPECT_EQ(ast.if_branches[1].block.size(), 1);
   auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition.get());
   EXPECT_EQ(tmp2.var, "cond3");
-#endif
 
   ASSERT_TRUE(ast.else_branch.has_value());
   EXPECT_EQ(ast.else_branch.get().size(), 1);
