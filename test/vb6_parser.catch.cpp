@@ -162,11 +162,10 @@ TEST_CASE("complex_type_identifier", "[vb6_parser_simple]")
 TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
 {
   vb6_ast::const_expr ast;
-  std::string_view str;
 
   SECTION("1")
   {
-    str = "\"una stringa\"";
+    auto str = "\"una stringa\"";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -176,7 +175,7 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
 
   SECTION("2")
   {
-    str = "True";
+    auto str = "True";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -186,7 +185,7 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
 
   SECTION("3")
   {
-    str = "Nothing";
+    auto str = "Nothing";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -198,11 +197,10 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
 TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 {
   vb6_ast::const_expr ast;
-  std::string str;
 
   SECTION("1")
   {
-    str = "1234%";
+    auto str = "1234%";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -212,7 +210,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 
   SECTION("2")
   {
-    str = "1234&";
+    auto str = "1234&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -222,7 +220,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 
   SECTION("3")
   {
-    str = "&Hcafedead&";
+    auto str = "&Hcafedead&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -232,7 +230,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 
   SECTION("4")
   {
-    str = "&01234&";
+    auto str = "&01234&";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -242,7 +240,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 
   SECTION("5")
   {
-    str = "1234";
+    auto str = "1234";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -254,11 +252,10 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
 TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
 {
   vb6_ast::const_expr ast;
-  std::string_view str;
 
   SECTION("1")
   {
-    str = "1234!";
+    auto str = "1234!";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -268,7 +265,7 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
 
   SECTION("2")
   {
-    str = "1234#";
+    auto str = "1234#";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -278,7 +275,7 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
 
   SECTION("1")
   {
-    str = "2.8";
+    auto str = "2.8";
     auto [res, sv] = test_grammar(str, vb6_grammar::const_expression, ast);
     INFO("stopped at: " << sv);
     REQUIRE(res);
@@ -327,33 +324,36 @@ TEST_CASE("sample_expression", "[vb6_parser_simple]")
 
 TEST_CASE("single_var_declaration", "[vb6_parser_simple]")
 {
-  vb6_ast::variable P1;
-  auto [res, sv] = test_grammar("g_logger As Long", vb6_grammar::single_var_declaration, P1);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
-  CHECK(P1.name == "g_logger");
-  CHECK(!P1.construct);
-  CHECK(P1.type.has_value());
-  if(P1.type)
-  {
-    CHECK(boost::get<vb6_ast::NativeType>(P1.type->value.get()) == vb6_ast::NativeType::Long);
-  }
-}
+  vb6_ast::variable P;
 
-TEST_CASE("single_var_declaration2", "[vb6_parser_simple]")
-{
-  vb6_ast::variable P2;
-  auto [res, sv] = test_grammar("name As New String", vb6_grammar::single_var_declaration, P2);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
-  CHECK(P2.name == "name");
-  CHECK(P2.construct);
-  CHECK(P2.type.has_value());
-  if(P2.type)
+  SECTION("1")
   {
-    CHECK(boost::get<vb6_ast::NativeType>(P2.type->value.get()) == vb6_ast::NativeType::String);
+    auto [res, sv] = test_grammar("g_logger As Long", vb6_grammar::single_var_declaration, P);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+    CHECK(P.name == "g_logger");
+    CHECK(!P.construct);
+    CHECK(P.type.has_value());
+    if(P.type)
+    {
+      CHECK(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::Long);
+    }
+  }
+
+  SECTION("2")
+  {
+    auto [res, sv] = test_grammar("name As New String", vb6_grammar::single_var_declaration, P);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+    CHECK(P.name == "name");
+    CHECK(P.construct);
+    CHECK(P.type.has_value());
+    if(P.type)
+    {
+      CHECK(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::String);
+    }
   }
 }
 
@@ -678,30 +678,33 @@ TEST_CASE("parameterless_procedure_heads_without_parentheses", "[vb6_parser_test
 TEST_CASE("subroutine_head", "[vb6_parser_tests]")
 {
   vb6_ast::subHead sh;
-  auto [res, sv] = test_grammar(
-    "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
-    vb6_grammar::subHead, sh);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
 
-  CHECK(sh.at == vb6_ast::access_type::private_);
-  CHECK(sh.name == "my_sub");
-  CHECK(sh.params.size() == 2);
-}
+  SECTION("1")
+  {
+    auto [res, sv] = test_grammar(
+      "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
+      vb6_grammar::subHead, sh);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
 
-TEST_CASE("subroutine_head2", "[vb6_parser_tests]")
-{
-  auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
-  vb6_ast::subHead sh;
-  auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
+    CHECK(sh.at == vb6_ast::access_type::private_);
+    CHECK(sh.name == "my_sub");
+    CHECK(sh.params.size() == 2);
+  }
 
-  CHECK(sh.at == vb6_ast::access_type::private_);
-  CHECK(sh.name == "my_sub");
-  CHECK(sh.params.size() == 3);
+  SECTION("2", "[vb6_parser_tests]")
+  {
+    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+
+    CHECK(sh.at == vb6_ast::access_type::private_);
+    CHECK(sh.name == "my_sub");
+    CHECK(sh.params.size() == 3);
+  }
 }
 
 TEST_CASE("subroutine_head_with_optional_params", "[vb6_parser_tests]")

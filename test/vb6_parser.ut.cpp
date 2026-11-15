@@ -267,31 +267,31 @@ ut::suite<"vb6_parser_simple"> _ = []
   {
     ut::test("1") = []
     {
-      vb6_ast::variable P1;
-      auto [res, sv] = test_grammar("g_logger As Long", vb6_grammar::single_var_declaration, P1);
+      vb6_ast::variable P;
+      auto [res, sv] = test_grammar("g_logger As Long", vb6_grammar::single_var_declaration, P);
       ut::expect(fatal(res)) << "stopped at: " << sv;
       ut::expect(sv.empty());
-      ut::expect(P1.name == "g_logger");
-      ut::expect(!P1.construct);
-      ut::expect(P1.type.has_value());
-      if(P1.type)
+      ut::expect(P.name == "g_logger");
+      ut::expect(!P.construct);
+      ut::expect(P.type.has_value());
+      if(P.type)
       {
-        ut::expect(boost::get<vb6_ast::NativeType>(P1.type->value.get()) == vb6_ast::NativeType::Long);
+        ut::expect(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::Long);
       }
     };
 
     ut::test("2") = []
     {
-      vb6_ast::variable P2;
-      auto [res, sv] = test_grammar("name As New String", vb6_grammar::single_var_declaration, P2);
+      vb6_ast::variable P;
+      auto [res, sv] = test_grammar("name As New String", vb6_grammar::single_var_declaration, P);
       ut::expect(fatal(res)) << "stopped at: " << sv;
       ut::expect(sv.empty());
-      ut::expect(P2.name == "name");
-      ut::expect(P2.construct);
-      ut::expect(P2.type.has_value());
-      if(P2.type)
+      ut::expect(P.name == "name");
+      ut::expect(P.construct);
+      ut::expect(P.type.has_value());
+      if(P.type)
       {
-        ut::expect(boost::get<vb6_ast::NativeType>(P2.type->value.get()) == vb6_ast::NativeType::String);
+        ut::expect(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::String);
       }
     };
   };
@@ -606,29 +606,32 @@ ut::suite<"vb6_parser_tests"> __ = []
 
   ut::test("subroutine_head") = []
   {
-    vb6_ast::subHead sh;
-    auto [res, sv] = test_grammar(
-      "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
-      vb6_grammar::subHead, sh);
-    ut::expect(fatal(res)) << "stopped at: " << sv;
-    ut::expect(sv.empty());
+    ut::test("1") = []
+    {
+      vb6_ast::subHead sh;
+      auto [res, sv] = test_grammar(
+        "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
+        vb6_grammar::subHead, sh);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
 
-    ut::expect(sh.at == vb6_ast::access_type::private_);
-    ut::expect(sh.name == "my_sub");
-    ut::expect(sh.params.size() == 2);
-  };
+      ut::expect(sh.at == vb6_ast::access_type::private_);
+      ut::expect(sh.name == "my_sub");
+      ut::expect(sh.params.size() == 2);
+    };
 
-  ut::test("subroutine_head2") = []
-  {
-    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
-    vb6_ast::subHead sh;
-    auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
-    ut::expect(fatal(res)) << "stopped at: " << sv;
-    ut::expect(sv.empty());
+    ut::test("2") = []
+    {
+      auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
+      vb6_ast::subHead sh;
+      auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
 
-    ut::expect(sh.at == vb6_ast::access_type::private_);
-    ut::expect(sh.name == "my_sub");
-    ut::expect(sh.params.size() == 3);
+      ut::expect(sh.at == vb6_ast::access_type::private_);
+      ut::expect(sh.name == "my_sub");
+      ut::expect(sh.params.size() == 3);
+    };
   };
 
   ut::test("subroutine_head_with_optional_params") = []

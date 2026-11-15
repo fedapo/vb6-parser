@@ -302,9 +302,10 @@ TEST_CASE("sample_expression")
 
 TEST_CASE("single_var_declaration")
 {
+  vb6_ast::variable P;
+
   SUBCASE("1")
   {
-    vb6_ast::variable P;
     auto [res, sv] = test_grammar("g_logger As Long", vb6_grammar::single_var_declaration, P);
     REQUIRE_MESSAGE(res, "stopped at: " << sv);
     CHECK(sv.empty());
@@ -319,7 +320,6 @@ TEST_CASE("single_var_declaration")
 
   SUBCASE("2")
   {
-    vb6_ast::variable P;
     auto [res, sv] = test_grammar("name As New String", vb6_grammar::single_var_declaration, P);
     REQUIRE_MESSAGE(res, "stopped at: " << sv);
     CHECK(sv.empty());
@@ -645,28 +645,31 @@ TEST_CASE("parameterless_procedure_heads_without_parentheses")
 TEST_CASE("subroutine_head")
 {
   vb6_ast::subHead sh;
-  auto [res, sv] = test_grammar(
-    "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
-    vb6_grammar::subHead, sh);
-  REQUIRE_MESSAGE(res, "stopped at: " << sv);
-  CHECK(sv.empty());
 
-  CHECK_EQ(sh.at, vb6_ast::access_type::private_);
-  CHECK_EQ(sh.name, "my_sub");
-  CHECK_EQ(sh.params.size(), 2);
-}
+  SUBCASE("1")
+  {
+    auto [res, sv] = test_grammar(
+      "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\n",
+      vb6_grammar::subHead, sh);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
 
-TEST_CASE("subroutine_head2")
-{
-  auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
-  vb6_ast::subHead sh;
-  auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
-  REQUIRE_MESSAGE(res, "stopped at: " << sv);
-  CHECK(sv.empty());
+    CHECK_EQ(sh.at, vb6_ast::access_type::private_);
+    CHECK_EQ(sh.name, "my_sub");
+    CHECK_EQ(sh.params.size(), 2);
+  }
 
-  CHECK_EQ(sh.at, vb6_ast::access_type::private_);
-  CHECK_EQ(sh.name, "my_sub");
-  CHECK_EQ(sh.params.size(), 3);
+  SUBCASE("2")
+  {
+    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean, Optional ByVal flag As Boolean = True)\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subHead, sh);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    CHECK_EQ(sh.at, vb6_ast::access_type::private_);
+    CHECK_EQ(sh.name, "my_sub");
+    CHECK_EQ(sh.params.size(), 3);
+  }
 }
 
 TEST_CASE("subroutine_head_with_optional_params")

@@ -107,7 +107,7 @@ inline std::string_view operator_spelling(operator_type op)
 enum class access_type
 {
   na,
-  dim,
+  dim, // TODO: this seems odd, check whether it makes sense here
   global,
   public_,
   private_,
