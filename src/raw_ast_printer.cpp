@@ -441,6 +441,21 @@ void raw_ast_printer::operator()(vb6_ast::functionDef const& ast) const
   os << ")\n";
 }
 
+void raw_ast_printer::operator()(vb6_ast::propertyDef const& ast) const
+{
+  os << string(indent, ' ') << '(' << typeid(ast).name();
+
+  boost::apply_visitor(*this, ast.header);
+  indent += indent_size;
+  for(auto& el : ast.statements)
+  {
+    (*this)(el);
+  }
+  indent -= indent_size;
+
+  os << ")\n";
+}
+
 void raw_ast_printer::operator()(vb6_ast::externalFunction const& ast) const
 {
   os << string(indent, ' ') << '(' << typeid(ast).name();

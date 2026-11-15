@@ -154,7 +154,7 @@ namespace vb6_grammar {
   using property_getHead_type        = x3::rule<property_getHead_class,        vb6_ast::propertyGetHead>;
   using subDef_type                  = x3::rule<subDef_class,                  vb6_ast::subDef>;
   using functionDef_type             = x3::rule<functionDef_class,             vb6_ast::functionDef>;
-  //using propertyDef_type             = x3::rule<propertyDef_class,             vb6_ast::propertyDef>;
+  using propertyDef_type             = x3::rule<propertyDef_class,             vb6_ast::propertyDef>;
   using functionCall_type            = x3::rule<functionCall_class,            vb6_ast::func_call>;
   using attributeDef_type            = x3::rule<attributeDef_class,            std::pair<std::string, vb6_ast::quoted_string>>;
   using option_item_type             = x3::rule<option_item_class,             vb6_ast::module_option>;
@@ -250,7 +250,7 @@ namespace vb6_grammar {
   property_getHead_type        const property_getHead        ("property_getHead");
   subDef_type                  const subDef                  ("subDef");
   functionDef_type             const functionDef             ("functionDef");
-  //propertyDef_type             const propertyDef             ("propertyDef");
+  propertyDef_type             const propertyDef             ("propertyDef");
   functionCall_type            const functionCall            ("functionCall");
   attributeDef_type            const attributeDef            ("attributeDef");
   option_item_type             const option_item             ("option_item");
@@ -329,7 +329,7 @@ namespace vb6_grammar {
     , property_getHead_type
     , subDef_type
     , functionDef_type
-    //, propertyDef_type
+    , propertyDef_type
     , functionCall_type
     , attributeDef_type
     , option_item_type

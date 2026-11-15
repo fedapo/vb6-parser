@@ -27,7 +27,7 @@ BOOST_SPIRIT_INSTANTIATE(attributeDef_type,            iterator_type, context_ty
 BOOST_SPIRIT_INSTANTIATE(option_item_type,             iterator_type, context_type)
 BOOST_SPIRIT_INSTANTIATE(subDef_type,                  iterator_type, context_type)
 BOOST_SPIRIT_INSTANTIATE(functionDef_type,             iterator_type, context_type)
-//BOOST_SPIRIT_INSTANTIATE(propertyDef_type,             iterator_type, context_type)
+BOOST_SPIRIT_INSTANTIATE(propertyDef_type,             iterator_type, context_type)
 BOOST_SPIRIT_INSTANTIATE(basModDef_type,               iterator_type, context_type)
 
 }

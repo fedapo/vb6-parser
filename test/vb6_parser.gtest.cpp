@@ -673,33 +673,44 @@ GTEST_TEST(vb6_parser_tests, subroutine_head_with_optional_params)
   }
 }
 
-GTEST_TEST(vb6_parser_tests, property_let_head)
+GTEST_TEST(vb6_parser_tests, property_head)
 {
-  auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
-  vb6_ast::propertyLetHead ast;
-  auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
-  ASSERT_TRUE(res) << "stopped at: " << sv;
-  EXPECT_TRUE(sv.empty());
+  {
+    auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
+    vb6_ast::propertyLetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(ast.at, vb6_ast::access_type::public_);
-  EXPECT_EQ(ast.name, "Width");
-  EXPECT_EQ(ast.params.size(), 1);
-}
+    EXPECT_EQ(ast.at, vb6_ast::access_type::public_);
+    EXPECT_EQ(ast.name, "Width");
+    EXPECT_EQ(ast.params.size(), 1);
+  }
+  {
+    auto str = "Public Property Set Width(ByVal w As Integer)\r\n";
+    vb6_ast::propertySetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_setHead, ast);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-GTEST_TEST(vb6_parser_tests, property_get_head)
-{
-  auto str = "Public Property Get Width() As Integer\r\n";
-  vb6_ast::propertyGetHead ast;
-  auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
-  ASSERT_TRUE(res) << "stopped at: " << sv;
-  EXPECT_TRUE(sv.empty());
+    EXPECT_EQ(ast.at, vb6_ast::access_type::public_);
+    EXPECT_EQ(ast.name, "Width");
+    EXPECT_EQ(ast.params.size(), 1);
+  }
+  {
+    auto str = "Public Property Get Width() As Integer\r\n";
+    vb6_ast::propertyGetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
 
-  EXPECT_EQ(ast.at, vb6_ast::access_type::public_);
-  EXPECT_EQ(ast.name, "Width");
-  EXPECT_EQ(ast.params.size(), 0);
-  ASSERT_TRUE(ast.return_type);
-  EXPECT_EQ(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()),
-            vb6_ast::NativeType::Integer);
+    EXPECT_EQ(ast.at, vb6_ast::access_type::public_);
+    EXPECT_EQ(ast.name, "Width");
+    EXPECT_EQ(ast.params.size(), 0);
+    ASSERT_TRUE(ast.return_type);
+    EXPECT_EQ(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()),
+              vb6_ast::NativeType::Integer);
+  }
 }
 
 GTEST_TEST(vb6_parser_tests, dll_subroutine_declaration)
@@ -960,6 +971,12 @@ GTEST_TEST(vb6_parser_tests, bas_unit)
                   End Sub
                   Function my_fun(ByRef str As String) As Long
                   End Function
+                  Property Get my_value() As Long
+                  End Property
+                  'Property Set my_value(ByVal v As Long)
+                  'End Property
+                  'Property Let my_value(ByVal v As Long)
+                  'End Property
                   )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
   ASSERT_TRUE(res) << "stopped at: " << sv;
@@ -968,7 +985,7 @@ GTEST_TEST(vb6_parser_tests, bas_unit)
   vb6_ast_printer P(std::cout);
   P(ast);
 
-  ASSERT_EQ(ast.size(), 11);
+  ASSERT_EQ(ast.size(), 16);
 
   EXPECT_EQ(boost::get<vb6_ast::module_attribute>(ast[0].get()).first, "ModuleName");
   EXPECT_EQ(boost::get<vb6_ast::module_attribute>(ast[1].get()).first, "ProgID");
@@ -985,6 +1002,9 @@ GTEST_TEST(vb6_parser_tests, bas_unit)
 
   EXPECT_NO_THROW(boost::get<vb6_ast::subDef>(ast[9].get()));
   EXPECT_NO_THROW(boost::get<vb6_ast::functionDef>(ast[10].get()));
+  EXPECT_NO_THROW(boost::get<vb6_ast::propertyDef>(ast[11].get()));
+  //EXPECT_NO_THROW(boost::get<vb6_ast::propertyDef>(ast[12].get()));
+  //EXPECT_NO_THROW(boost::get<vb6_ast::propertyDef>(ast[13].get()));
 }
 
 GTEST_TEST(vb6_parser_tests, trailing_comment)

@@ -678,32 +678,48 @@ ut::suite<"vb6_parser_tests"> __ = []
     }
   };
 
-  ut::test("property_let_head") = []
+  ut::test("property_head") = []
   {
-    auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
-    vb6_ast::propertyLetHead ast;
-    auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
-    ut::expect(fatal(res)) << "stopped at: " << sv;
-    ut::expect(sv.empty());
+    ut::test("let") = []
+    {
+      auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
+      vb6_ast::propertyLetHead ast;
+      auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
 
-    ut::expect(ast.at == vb6_ast::access_type::public_);
-    ut::expect(ast.name == "Width");
-    ut::expect(ast.params.size() == 1);
-  };
+      ut::expect(ast.at == vb6_ast::access_type::public_);
+      ut::expect(ast.name == "Width");
+      ut::expect(ast.params.size() == 1);
+    };
 
-  ut::test("property_get_head") = []
-  {
-    auto str = "Public Property Get Width() As Integer\r\n";
-    vb6_ast::propertyGetHead ast;
-    auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
-    ut::expect(fatal(res)) << "stopped at: " << sv;
-    ut::expect(sv.empty());
+    ut::test("set") = []
+    {
+      auto str = "Public Property Set Width(ByVal w As Integer)\r\n";
+      vb6_ast::propertySetHead ast;
+      auto [res, sv] = test_grammar(str, vb6_grammar::property_setHead, ast);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
 
-    ut::expect(ast.at == vb6_ast::access_type::public_);
-    ut::expect(ast.name == "Width");
-    ut::expect(ast.params.size() == 0);
-    ut::expect(fatal(ast.return_type.has_value()));
-    ut::expect(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
+      ut::expect(ast.at == vb6_ast::access_type::public_);
+      ut::expect(ast.name == "Width");
+      ut::expect(ast.params.size() == 1);
+    };
+
+    ut::test("get") = []
+    {
+      auto str = "Public Property Get Width() As Integer\r\n";
+      vb6_ast::propertyGetHead ast;
+      auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
+
+      ut::expect(ast.at == vb6_ast::access_type::public_);
+      ut::expect(ast.name == "Width");
+      ut::expect(ast.params.size() == 0);
+      ut::expect(fatal(ast.return_type.has_value()));
+      ut::expect(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
+    };
   };
 
   ut::test("dll_subroutine_declaration") = []
@@ -963,6 +979,12 @@ ut::suite<"vb6_parser_tests"> __ = []
                     End Sub
                     Function my_fun(ByRef str As String) As Long
                     End Function
+                    Property Get my_value() As Long
+                    End Property
+                    'Property Set my_value(ByVal v As Long)
+                    'End Property
+                    'Property Let my_value(ByVal v As Long)
+                    'End Property
                     )vb";
     auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
     ut::expect(fatal(res)) << "stopped at: " << sv;
@@ -971,7 +993,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     vb6_ast_printer P(std::cout);
     P(ast);
 
-    ut::expect(fatal(ut::eq(ast.size(), 11)));
+    ut::expect(fatal(ut::eq(ast.size(), 16)));
 
     ut::expect(boost::get<vb6_ast::module_attribute>(ast[0].get()).first == "ModuleName");
     ut::expect(boost::get<vb6_ast::module_attribute>(ast[1].get()).first == "ProgID");
@@ -988,6 +1010,9 @@ ut::suite<"vb6_parser_tests"> __ = []
 
     ut::expect(ut::nothrow([ast](){boost::get<vb6_ast::subDef>(ast[9].get());}));
     ut::expect(ut::nothrow([ast](){boost::get<vb6_ast::functionDef>(ast[10].get());}));
+    ut::expect(ut::nothrow([ast](){boost::get<vb6_ast::propertyDef>(ast[11].get());}));
+    //ut::expect(ut::nothrow([ast](){boost::get<vb6_ast::propertyDef>(ast[12].get());}));
+    //ut::expect(ut::nothrow([ast](){boost::get<vb6_ast::propertyDef>(ast[13].get());}));
   };
 
   ut::test("trailing_comment") = []

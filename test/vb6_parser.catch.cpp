@@ -752,34 +752,51 @@ TEST_CASE("subroutine_head_with_optional_params", "[vb6_parser_tests]")
   }
 }
 
-TEST_CASE("property_let_head", "[vb6_parser_tests]")
+TEST_CASE("property_head", "[vb6_parser_tests]")
 {
-  auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
-  vb6_ast::propertyLetHead ast;
-  auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
+  SECTION("let")
+  {
+    auto str = "Public Property Let Width(ByVal w As Integer)\r\n";
+    vb6_ast::propertyLetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_letHead, ast);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
 
-  CHECK(ast.at == vb6_ast::access_type::public_);
-  CHECK(ast.name == "Width");
-  CHECK(ast.params.size() == 1);
-}
+    CHECK(ast.at == vb6_ast::access_type::public_);
+    CHECK(ast.name == "Width");
+    CHECK(ast.params.size() == 1);
+  }
 
-TEST_CASE("property_get_head", "[vb6_parser_tests]")
-{
-  auto str = "Public Property Get Width() As Integer\r\n";
-  vb6_ast::propertyGetHead ast;
-  auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
-  INFO("stopped at: " << sv);
-  REQUIRE(res);
-  CHECK(sv.empty());
+  SECTION("set")
+  {
+    auto str = "Public Property Set Width(ByVal w As Integer)\r\n";
+    vb6_ast::propertySetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_setHead, ast);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
 
-  CHECK(ast.at == vb6_ast::access_type::public_);
-  CHECK(ast.name == "Width");
-  CHECK(ast.params.size() == 0);
-  REQUIRE(ast.return_type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
+    CHECK(ast.at == vb6_ast::access_type::public_);
+    CHECK(ast.name == "Width");
+    CHECK(ast.params.size() == 1);
+  }
+
+  SECTION("get", "[vb6_parser_tests]")
+  {
+    auto str = "Public Property Get Width() As Integer\r\n";
+    vb6_ast::propertyGetHead ast;
+    auto [res, sv] = test_grammar(str, vb6_grammar::property_getHead, ast);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+
+    CHECK(ast.at == vb6_ast::access_type::public_);
+    CHECK(ast.name == "Width");
+    CHECK(ast.params.size() == 0);
+    REQUIRE(ast.return_type.has_value());
+    CHECK(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
+  }
 }
 
 TEST_CASE("dll_subroutine_declaration", "[vb6_parser_tests]")
@@ -1048,6 +1065,12 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
                   End Sub
                   Function my_fun(ByRef str As String) As Long
                   End Function
+                  Property Get my_value() As Long
+                  End Property
+                  'Property Set my_value(ByVal v As Long)
+                  'End Property
+                  'Property Let my_value(ByVal v As Long)
+                  'End Property
                   )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
   INFO("stopped at: " << sv);
@@ -1057,7 +1080,7 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
   vb6_ast_printer P(std::cout);
   P(ast);
 
-  REQUIRE(ast.size() == 11);
+  REQUIRE(ast.size() == 16);
 
   CHECK(boost::get<vb6_ast::module_attribute>(ast[0].get()).first == "ModuleName");
   CHECK(boost::get<vb6_ast::module_attribute>(ast[1].get()).first == "ProgID");
@@ -1074,6 +1097,9 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
 
   REQUIRE_NOTHROW(boost::get<vb6_ast::subDef>(ast[9].get()));
   REQUIRE_NOTHROW(boost::get<vb6_ast::functionDef>(ast[10].get()));
+  REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[11].get()));
+  //REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[12].get()));
+  //REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[13].get()));
 }
 
 TEST_CASE("trailing_comment", "[vb6_parser_tests]")

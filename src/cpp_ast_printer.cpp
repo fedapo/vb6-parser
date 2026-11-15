@@ -357,6 +357,12 @@ void cpp_ast_printer::operator()(vb6_ast::functionDef const& ast) const
   print_block(ast.statements);
 }
 
+void cpp_ast_printer::operator()(vb6_ast::propertyDef const& ast) const
+{
+  boost::apply_visitor(*this, ast.header);
+  print_block(ast.statements);
+}
+
 void cpp_ast_printer::operator()(vb6_ast::externalFunction const& ast) const
 {
   print_type(ast.at);

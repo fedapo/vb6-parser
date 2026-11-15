@@ -663,26 +663,9 @@ struct functionDef : x3::position_tagged
   statements::statement_block statements;
 };
 
-struct get_prop : x3::position_tagged
+struct propertyDef : x3::position_tagged
 {
-  std::string name;
-  access_type at;
-  std::vector<func_param> params;
-  statements::statement_block statements;
-};
-
-struct let_prop : x3::position_tagged
-{
-  std::string name;
-  access_type at;
-  std::vector<func_param> params;
-  statements::statement_block stats;
-};
-
-struct set_prop : x3::position_tagged
-{
-  std::string name;
-  access_type at;
+  x3::variant<propertyLetHead, propertySetHead, propertyGetHead> header;
   statements::statement_block statements;
 };
 
@@ -725,10 +708,8 @@ namespace STRICT_MODULE_STRUCTURE
   using functionList = std::vector<
                          x3::variant<//lonely_comment,
                            functionDef,
-                           subDef
-                           //get_prop,
-                           //let_prop,
-                           //set_prop
+                           subDef,
+                           propertyDef
                          >
                        >;
 
@@ -767,10 +748,8 @@ using vb_module = std::vector<
                       module_option,
                       declaration,
                       functionDef,
-                      subDef
-                      //get_prop,
-                      //let_prop,
-                      //set_prop
+                      subDef,
+                      propertyDef
                     >
                   >;
 /*
@@ -784,10 +763,8 @@ struct vb_module : x3::position_tagged
     module_option,
     declaration,
     functionDef,
-    subDef
-    //get_prop,
-    //let_prop,
-    //set_prop
+    subDef,
+    propertyDef
     >
   > items;
 };

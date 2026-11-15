@@ -382,6 +382,18 @@ void vb6_ast_printer::operator()(vb6_ast::functionDef const& ast) const
   os << "End Function\n";
 }
 
+void vb6_ast_printer::operator()(vb6_ast::propertyDef const& ast) const
+{
+  boost::apply_visitor(*this, ast.header);
+  indent += indent_size;
+  for(auto& el : ast.statements)
+  {
+    (*this)(el);
+  }
+  indent -= indent_size;
+  os << "End Property\n";
+}
+
 void vb6_ast_printer::operator()(vb6_ast::externalFunction const& ast) const
 {
   print_type(ast.at);

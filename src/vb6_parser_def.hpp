@@ -329,7 +329,7 @@ namespace vb6_grammar {
                                  >> cmdTermin;
   auto const property_getHead_def = private_or_public >> (kwProperty > kwGet) >> prop_identifier
                                  >> '(' >> param_list_decl >> ')' >> -(kwAs >> type_identifier)
-                                 >> cmdTermin;;
+                                 >> cmdTermin;
 
   auto const functionCall_def = func_identifier >> '(' >> -(expression % ',') >> ')';
 
@@ -514,9 +514,9 @@ namespace vb6_grammar {
   auto const functionDef_def = functionHead
                             >> statements::statement_block
                             >> kwgEndFunction;
-  //auto const propertyDef_def = (property_getHead | property_letHead | property_setHead)
-  //                          >> statements::statement_block
-  //                          >> kwgEndProperty;
+  auto const propertyDef_def = (property_getHead | property_letHead | property_setHead)
+                            >> statements::statement_block
+                            >> kwgEndProperty;
 
   auto const attr_name = basic_identifier;
   auto const attributeDef_def = kwAttribute
@@ -559,12 +559,12 @@ namespace vb6_grammar {
     //auto const funcList = x3::rule<class funcList, vb6_ast::functionList>("funcList")
     //                    = *( subDef
     //                       | functionDef
-    //                       //| propertyDef
+    //                       | propertyDef
     //                       );
 
     auto const func_subDef = subDef
                            | functionDef
-                           //| propertyDef
+                           | propertyDef
                            ;
 
     auto const basModDef_def = preamble
@@ -593,7 +593,7 @@ namespace vb6_grammar {
 
   auto const func_subDef = subDef
                          | functionDef
-                         //| propertyDef
+                         | propertyDef
                          ;
 
   auto const basModDef_def = *(lonely_comment // critical to have this as the first element
@@ -633,11 +633,11 @@ namespace vb6_grammar {
     , property_getHead
     , subDef
     , functionDef
+    , propertyDef
     , functionCall
     , attributeDef
     , option_item
     , declaration
     , basModDef
   )
-    //, propertyDef
 }

@@ -271,6 +271,11 @@ BOOST_FUSION_ADAPT_STRUCT(vb6_ast::functionDef,
     statements
 )
 
+BOOST_FUSION_ADAPT_STRUCT(vb6_ast::propertyDef,
+    header,
+    statements
+)
+
 BOOST_FUSION_ADAPT_STRUCT(vb6_ast::externalSub,
     at,
     name,

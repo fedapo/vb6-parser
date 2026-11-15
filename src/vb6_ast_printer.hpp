@@ -39,6 +39,7 @@ public:
   void operator()(vb6_ast::propertyGetHead const&) const;
   void operator()(vb6_ast::subDef const&) const;
   void operator()(vb6_ast::functionDef const&) const;
+  void operator()(vb6_ast::propertyDef const&) const;
 
   void operator()(vb6_ast::module_attribute) const;
   void operator()(vb6_ast::module_option) const;

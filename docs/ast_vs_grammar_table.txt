@@ -72,9 +72,7 @@ vb6_ast::statement_block         vb6_grammar::statement_block
 
 vb6_ast::subDef                  vb6_grammar::subDef
 vb6_ast::functionDef             vb6_grammar::functionDef
-vb6_ast::get_prop                vb6_grammar::
-vb6_ast::let_prop                vb6_grammar::
-vb6_ast::set_prop                vb6_grammar::
+vb6_ast::propertyDef             vb6_grammar::propertyDef
 
 STRICT_MODULE_STRUCTURE
   module_attributes
