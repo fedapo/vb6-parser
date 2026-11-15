@@ -667,6 +667,40 @@ ut::suite<"vb6_parser_tests"> __ = []
     }
   };
 
+  ut::test("subroutine_definition") = []
+  {
+    ut::test("1") = []
+    {
+      vb6_ast::subDef ast;
+      auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\nEnd Sub\r\n";
+      auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
+
+      ut::expect(ast.header.at == vb6_ast::access_type::private_);
+      ut::expect(ast.header.name == "my_sub");
+      ut::expect(ast.header.params.size() == 2);
+      ut::expect(ast.statements.empty());
+    };
+
+    ut::test("2") = []
+    {
+      vb6_ast::subDef ast;
+      auto str = R"vb(Sub mySub(ByRef p1 As String, ByVal p2 As Boolean, p3 As Long)
+                  ' this is a comment
+              End Sub
+            )vb";
+      auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+      ut::expect(fatal(res)) << "stopped at: " << sv;
+      ut::expect(sv.empty());
+
+      ut::expect(ast.header.at == vb6_ast::access_type::na);
+      ut::expect(ast.header.name == "mySub");
+      ut::expect(ast.header.params.size() == 3);
+      ut::expect(ast.statements.size() == 1);
+    };
+  };
+
   ut::test("property_head") = []
   {
     ut::test("let") = []

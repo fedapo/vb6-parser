@@ -679,6 +679,40 @@ TEST_CASE("subroutine_head_with_optional_params")
   }
 }
 
+TEST_CASE("subroutine_definition")
+{
+  vb6_ast::subDef ast;
+
+  SUBCASE("1")
+  {
+    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\nEnd Sub\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    CHECK_EQ(ast.header.at, vb6_ast::access_type::private_);
+    CHECK_EQ(ast.header.name, "my_sub");
+    CHECK_EQ(ast.header.params.size(), 2);
+    CHECK(ast.statements.empty());
+  }
+
+  SUBCASE("2")
+  {
+    auto str = R"vb(Sub mySub(ByRef p1 As String, ByVal p2 As Boolean, p3 As Long)
+                ' this is a comment
+            End Sub
+           )vb";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    CHECK_EQ(ast.header.at, vb6_ast::access_type::na);
+    CHECK_EQ(ast.header.name, "mySub");
+    CHECK_EQ(ast.header.params.size(), 3);
+    CHECK_EQ(ast.statements.size(), 1);
+  }
+}
+
 TEST_CASE("property_head")
 {
   SUBCASE("let")

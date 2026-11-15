@@ -714,6 +714,42 @@ TEST_CASE("subroutine_head_with_optional_params", "[vb6_parser_tests]")
   }
 }
 
+TEST_CASE("subroutine_definition", "[vb6_parser_tests]")
+{
+  vb6_ast::subDef ast;
+
+  SECTION("1")
+  {
+    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\nEnd Sub\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+
+    CHECK(ast.header.at == vb6_ast::access_type::private_);
+    CHECK(ast.header.name == "my_sub");
+    CHECK(ast.header.params.size() == 2);
+    CHECK(ast.statements.empty());
+  }
+
+  SECTION("2")
+  {
+    auto str = R"vb(Sub mySub(ByRef p1 As String, ByVal p2 As Boolean, p3 As Long)
+                ' this is a comment
+            End Sub
+           )vb";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    INFO("stopped at: " << sv);
+    REQUIRE(res);
+    CHECK(sv.empty());
+
+    CHECK(ast.header.at == vb6_ast::access_type::na);
+    CHECK(ast.header.name == "mySub");
+    CHECK(ast.header.params.size() == 3);
+    CHECK(ast.statements.size() == 1);
+  }
+}
+
 TEST_CASE("property_head", "[vb6_parser_tests]")
 {
   SECTION("let")

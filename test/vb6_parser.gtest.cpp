@@ -668,6 +668,39 @@ GTEST_TEST(vb6_parser_tests, subroutine_head_with_optional_params)
   }
 }
 
+GTEST_TEST(vb6_parser_tests, subroutine_definition)
+{
+  //vb6_ast::subDef ast; // TODO
+
+  {
+    vb6_ast::subDef ast;
+    auto str = "Private Sub my_sub(ByRef str As String, ByVal valid As Boolean)\r\nEnd Sub\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+
+    EXPECT_EQ(ast.header.at, vb6_ast::access_type::private_);
+    EXPECT_EQ(ast.header.name, "my_sub");
+    EXPECT_EQ(ast.header.params.size(), 2);
+    EXPECT_TRUE(ast.statements.empty());
+  }
+  {
+    vb6_ast::subDef ast;
+    auto str = R"vb(Sub mySub(ByRef p1 As String, ByVal p2 As Boolean, p3 As Long)
+                ' this is a comment
+            End Sub
+           )vb";
+    auto [res, sv] = test_grammar(str, vb6_grammar::subDef, ast);
+    ASSERT_TRUE(res) << "stopped at: " << sv;
+    EXPECT_TRUE(sv.empty());
+
+    EXPECT_EQ(ast.header.at, vb6_ast::access_type::na);
+    EXPECT_EQ(ast.header.name, "mySub");
+    EXPECT_EQ(ast.header.params.size(), 3);
+    EXPECT_EQ(ast.statements.size(), 1);
+  }
+}
+
 GTEST_TEST(vb6_parser_tests, property_head)
 {
   {
