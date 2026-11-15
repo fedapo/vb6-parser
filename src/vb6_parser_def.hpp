@@ -321,13 +321,13 @@ namespace vb6_grammar {
   auto const functionHead_def = private_or_public >> kwFunction >> func_identifier
                              >> optional_procedure_params >> -(kwAs >> type_identifier)
                              >> cmdTermin;
-  auto const property_letHead_def = private_or_public >> (kwProperty > kwLet) >> prop_identifier
+  auto const property_letHead_def = private_or_public >> (kwProperty >> kwLet) >> prop_identifier
                                  >> '(' >> param_list_decl >> ')'
                                  >> cmdTermin;
-  auto const property_setHead_def = private_or_public >> (kwProperty > kwSet) >> prop_identifier
+  auto const property_setHead_def = private_or_public >> (kwProperty >> kwSet) >> prop_identifier
                                  >> '(' >> param_list_decl >> ')'
                                  >> cmdTermin;
-  auto const property_getHead_def = private_or_public >> (kwProperty > kwGet) >> prop_identifier
+  auto const property_getHead_def = private_or_public >> (kwProperty >> kwGet) >> prop_identifier
                                  >> '(' >> param_list_decl >> ')' >> -(kwAs >> type_identifier)
                                  >> cmdTermin;
 

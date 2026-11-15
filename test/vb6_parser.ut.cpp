@@ -1004,9 +1004,9 @@ ut::suite<"vb6_parser_tests"> __ = []
                     End Function
                     Property Get my_value() As Long
                     End Property
-                    'Property Set my_value(ByVal v As Long)
-                    'End Property
-                    'Property Let my_value(ByVal v As Long) : End Property
+                    Property Set my_value(ByVal v As Long)
+                    End Property
+                    Property Let my_value(ByVal v As Long) : End Property
                     )vb";
     auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
     ut::expect(fatal(res)) << "stopped at: " << sv;
@@ -1015,7 +1015,7 @@ ut::suite<"vb6_parser_tests"> __ = []
     vb6_ast_printer P(std::cout);
     P(ast);
 
-    ut::expect(fatal(ut::eq(ast.size(), 15)));
+    ut::expect(fatal(ut::eq(ast.size(), 14)));
 
     ut::expect(boost::get<vb6_ast::module_attribute>(ast[0]).first == "ModuleName");
     ut::expect(boost::get<vb6_ast::module_attribute>(ast[1]).first == "ProgID");
@@ -1033,8 +1033,8 @@ ut::suite<"vb6_parser_tests"> __ = []
     ut::expect(boost::get<vb6_ast::subDef>(&ast[9]));
     ut::expect(boost::get<vb6_ast::functionDef>(&ast[10]));
     ut::expect(boost::get<vb6_ast::propertyDef>(&ast[11]));
-    //ut::expect(boost::get<vb6_ast::propertyDef>(&ast[12])));
-    //ut::expect(boost::get<vb6_ast::propertyDef>(&ast[13])));
+    ut::expect(boost::get<vb6_ast::propertyDef>(&ast[12]));
+    ut::expect(boost::get<vb6_ast::propertyDef>(&ast[13]));
   };
 
   ut::test("trailing_comment") = []

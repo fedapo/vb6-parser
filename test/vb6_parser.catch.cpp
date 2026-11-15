@@ -1065,9 +1065,9 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
                   End Function
                   Property Get my_value() As Long
                   End Property
-                  'Property Set my_value(ByVal v As Long)
-                  'End Property
-                  'Property Let my_value(ByVal v As Long) : End Property
+                  Property Set my_value(ByVal v As Long)
+                  End Property
+                  Property Let my_value(ByVal v As Long) : End Property
                   )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
   INFO("stopped at: " << sv);
@@ -1077,7 +1077,7 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
   vb6_ast_printer P(std::cout);
   P(ast);
 
-  REQUIRE(ast.size() == 15);
+  REQUIRE(ast.size() == 14);
 
   CHECK(boost::get<vb6_ast::module_attribute>(ast[0]).first == "ModuleName");
   CHECK(boost::get<vb6_ast::module_attribute>(ast[1]).first == "ProgID");
@@ -1095,8 +1095,8 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
   REQUIRE(boost::get<vb6_ast::subDef>(&ast[9]));
   REQUIRE(boost::get<vb6_ast::functionDef>(&ast[10]));
   REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[11]));
-  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[12]));
-  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[13]));
+  REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[12]));
+  REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[13]));
 }
 
 TEST_CASE("trailing_comment", "[vb6_parser_tests]")

@@ -757,6 +757,72 @@ TEST_CASE("property_head")
   }
 }
 
+TEST_CASE("property_definition")
+{
+  vb6_ast::propertyDef ast;
+
+  SUBCASE("get")
+  {
+    auto str = "Private Property Get message() As String\r\nEnd Property\r\n";
+    auto [res, sv] = test_grammar(str, vb6_grammar::propertyDef, ast);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    auto const* header = boost::get<vb6_ast::propertyGetHead>(&ast.header);
+    CHECK(header);
+
+    CHECK_EQ(header->at, vb6_ast::access_type::private_);
+    CHECK_EQ(header->name, "message");
+
+    REQUIRE(header->return_type.has_value());
+
+    auto const& return_type =
+      boost::get<vb6_ast::simple_type_identifier>(header->return_type->value);
+    CHECK_EQ(return_type, vb6_ast::NativeType::String);
+
+    CHECK(header->params.empty());
+    CHECK(ast.statements.empty());
+  }
+
+  SUBCASE("let")
+  {
+    auto str = R"vb(Private Property Let message(ByRef v As String)
+                ' this is a comment
+            End Property
+           )vb";
+    auto [res, sv] = test_grammar(str, vb6_grammar::propertyDef, ast);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    auto header = boost::get<vb6_ast::propertyLetHead>(&ast.header);
+    CHECK(header);
+
+    CHECK_EQ(header->at, vb6_ast::access_type::private_);
+    CHECK_EQ(header->name, "message");
+    CHECK_EQ(header->params.size(), 1);
+    CHECK_EQ(ast.statements.size(), 1);
+  }
+
+  SUBCASE("set")
+  {
+    auto str = R"vb(Private Property Set message(ByRef v As String)
+                ' this is a comment
+            End Property
+           )vb";
+    auto [res, sv] = test_grammar(str, vb6_grammar::propertyDef, ast);
+    REQUIRE_MESSAGE(res, "stopped at: " << sv);
+    CHECK(sv.empty());
+
+    auto header = boost::get<vb6_ast::propertySetHead>(&ast.header);
+    CHECK(header);
+
+    CHECK_EQ(header->at, vb6_ast::access_type::private_);
+    CHECK_EQ(header->name, "message");
+    CHECK_EQ(header->params.size(), 1);
+    CHECK_EQ(ast.statements.size(), 1);
+  }
+}
+
 TEST_CASE("dll_subroutine_declaration")
 {
   vb6_ast::externalSub extsub;
@@ -1015,9 +1081,9 @@ TEST_CASE("bas_unit")
                   End Function
                   Property Get my_value() As Long
                   End Property
-                  'Property Set my_value(ByVal v As Long)
-                  'End Property
-                  'Property Let my_value(ByVal v As Long) : End Property
+                  Property Set my_value(ByVal v As Long)
+                  End Property
+                  Property Let my_value(ByVal v As Long) : End Property
                   )vb";
   MESSAGE("[FED] here");
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
@@ -1027,7 +1093,7 @@ TEST_CASE("bas_unit")
   vb6_ast_printer P(std::cout);
   P(ast);
 
-  REQUIRE_EQ(ast.size(), 15);
+  REQUIRE_EQ(ast.size(), 14);
 
   CHECK_EQ(boost::get<vb6_ast::module_attribute>(ast[0]).first, "ModuleName");
   CHECK_EQ(boost::get<vb6_ast::module_attribute>(ast[1]).first, "ProgID");
@@ -1045,8 +1111,8 @@ TEST_CASE("bas_unit")
   REQUIRE(boost::get<vb6_ast::subDef>(&ast[9]));
   REQUIRE(boost::get<vb6_ast::functionDef>(&ast[10]));
   REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[11]));
-  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[12]));
-  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[13]));
+  REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[12]));
+  REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[13]));
 }
 
 TEST_CASE("trailing_comment")
