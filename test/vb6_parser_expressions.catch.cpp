@@ -16,6 +16,44 @@
 
 namespace x3 = boost::spirit::x3;
 
+TEST_CASE("sample_expression", "[vb6_parser_expressions]")
+{
+  vb6_ast::expression ast;
+  auto [res, sv] =
+    test_grammar("foo1(foo2(3 + foo3(4), M.x_coord), True)", vb6_grammar::expression, ast);
+  INFO("stopped at: " << sv);
+  REQUIRE(res);
+  CHECK(sv.empty());
+  CHECK(boost::get<x3::forward_ast<vb6_ast::func_call>>(&ast));
+  auto const& outer = boost::get<x3::forward_ast<vb6_ast::func_call>>(ast).get();
+  CHECK(outer.func_name == "foo1");
+  REQUIRE(outer.params.size() == 2);
+
+  REQUIRE(boost::get<x3::forward_ast<vb6_ast::func_call>>(&outer.params[0]));
+  auto const& inner =
+    boost::get<x3::forward_ast<vb6_ast::func_call>>(outer.params[0]).get();
+  CHECK(inner.func_name == "foo2");
+  REQUIRE(inner.params.size() == 2);
+
+  REQUIRE(boost::get<x3::forward_ast<vb6_ast::binary_expression>>(&inner.params[0]));
+  auto const& sum =
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(inner.params[0]).get();
+  REQUIRE(sum.rest.size() == 1);
+  CHECK(sum.rest[0].op == vb6_ast::operator_type::plus);
+  auto const& integer = boost::get<vb6_ast::const_expr>(sum.lhs);
+  CHECK(boost::get<vb6_ast::integer_dec>(integer).val == 3);
+  REQUIRE(boost::get<x3::forward_ast<vb6_ast::func_call>>(&sum.rest[0].operand));
+  auto const& operand_call =
+    boost::get<x3::forward_ast<vb6_ast::func_call>>(sum.rest[0].operand).get();
+  CHECK(operand_call.func_name == "foo3");
+  REQUIRE(operand_call.params.size() == 1);
+  auto const& operand_arg = boost::get<vb6_ast::const_expr>(operand_call.params[0]);
+  CHECK(boost::get<vb6_ast::integer_dec>(operand_arg).val == 4);
+  auto const& member = boost::get<vb6_ast::decorated_variable>(inner.params[1]);
+  CHECK(member.ctx.elements.size() == 1);
+  CHECK(member.var == "x_coord");
+}
+
 TEST_CASE("expression_operators", "[vb6_parser_expressions]")
 {
   std::vector<std::pair<std::string, vb6_ast::operator_type>> const binary_cases{

@@ -252,17 +252,6 @@ ut::suite<"vb6_parser_simple"> _ = []
     };
   };
 
-  ut::test("sample_expression") = []
-  {
-    vb6_ast::expression ast;
-    auto [res, sv] = test_grammar(
-      "foo1(foo2(3 + foo3(4), M.x_coord), True)", vb6_grammar::expression, ast);
-    ut::expect(fatal(res)) << "stopped at: " << sv;
-    ut::expect(sv.empty());
-    ut::expect(ast.get().type() == typeid(x3::forward_ast<vb6_ast::func_call>));
-    ut::expect(boost::get<x3::forward_ast<vb6_ast::func_call>>(ast.get()).get().func_name == "foo1");
-  };
-
   ut::test("single_var_declaration") = []
   {
     ut::test("1") = []
