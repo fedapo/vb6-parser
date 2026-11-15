@@ -24,9 +24,7 @@ GTEST_TEST(vb6_parser_statements, Assignment_0)
   EXPECT_EQ(st.var.var, "var1");
   EXPECT_FALSE(st.var.ctx.leading_dot);
   EXPECT_TRUE(st.var.ctx.elements.empty());
-  EXPECT_EQ(boost::get<vb6_ast::quoted_string>(
-              boost::get<vb6_ast::const_expr>(st.rhs.get()).get()
-            ), "  ciao");
+  EXPECT_EQ(boost::get<vb6_ast::quoted_string>(boost::get<vb6_ast::const_expr>(st.rhs)), "  ciao");
 }
 
 GTEST_TEST(vb6_parser_statements, Assignment_1)
@@ -40,9 +38,7 @@ GTEST_TEST(vb6_parser_statements, Assignment_1)
   EXPECT_EQ(st.var.var, "var2");
   EXPECT_FALSE(st.var.ctx.leading_dot);
   EXPECT_TRUE(st.var.ctx.elements.empty());
-  EXPECT_EQ(boost::get<float>(
-    boost::get<vb6_ast::const_expr>(st.rhs.get()).get()
-    ), 54.7f);
+  EXPECT_EQ(boost::get<float>(boost::get<vb6_ast::const_expr>(st.rhs)), 54.7f);
 }
 
 GTEST_TEST(vb6_parser_statements, Assignment_2)
@@ -56,9 +52,7 @@ GTEST_TEST(vb6_parser_statements, Assignment_2)
   EXPECT_EQ(st.var.var, "var3");
   EXPECT_FALSE(st.var.ctx.leading_dot);
   EXPECT_TRUE(st.var.ctx.elements.empty());
-  auto& func = boost::get<x3::forward_ast<vb6_ast::func_call>>(
-                 st.rhs.get()
-               ).get();
+  auto& func = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.rhs).get();
   EXPECT_EQ(func.func_name, "Func");
 }
 
@@ -90,7 +84,7 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_1)
   EXPECT_EQ(st.vars[0].name, "var");
   ASSERT_TRUE(st.vars[0].type);
   auto const& form_type =
-    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value.get());
+    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value);
   EXPECT_FALSE(form_type.library_or_module.has_value());
   EXPECT_EQ(form_type.name, "Form");
 }
@@ -109,12 +103,12 @@ GTEST_TEST(vb6_parser_statements, LocalVarDecl_2)
   EXPECT_FALSE(st.vars[0].construct);
   EXPECT_EQ(st.vars[0].name, "var1");
   ASSERT_TRUE(st.vars[0].type);
-  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[0].type->value.get()), vb6_ast::NativeType::String);
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[0].type->value), vb6_ast::NativeType::String);
 
   EXPECT_FALSE(st.vars[1].construct);
   EXPECT_EQ(st.vars[1].name, "var2");
   ASSERT_TRUE(st.vars[1].type);
-  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[1].type->value.get()), vb6_ast::NativeType::Integer);
+  EXPECT_EQ(boost::get<vb6_ast::NativeType>(st.vars[1].type->value), vb6_ast::NativeType::Integer);
 }
 
 GTEST_TEST(vb6_parser_statements, ReDim)
@@ -261,26 +255,52 @@ GTEST_TEST(vb6_parser_statements, statement_block)
          Call Foo(13)
          Foo "Sea", Nothing, False
          RaiseEvent OnChange("hi!")
+
+         ' comment
+         With var : End With
+         If cond1 Then : ElseIf cond2 Then : Else : End If
+         While cond : Wend
+         Do While cond : Loop
+         Do Until cond : Loop
+         Do : Loop While cond
+         Do : Loop Until cond
+         Do : Loop
+         For i = 1 To 10  Step 2 : Next i
+         Select Case var : Case 0 : End Select
+         For Each el In container : Next el
       )vb", vb6_grammar::statements::statement_block, st);
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  ASSERT_EQ(st.size(), 15);
-  EXPECT_EQ(st[0].get().type(), typeid(vb6_ast::statements::assignStmt));
-  EXPECT_EQ(st[1].get().type(), typeid(vb6_ast::statements::assignStmt));
-  EXPECT_EQ(st[2].get().type(), typeid(vb6_ast::statements::assignStmt));
-  EXPECT_EQ(st[3].get().type(), typeid(vb6_ast::statements::assignStmt));
-  EXPECT_EQ(st[4].get().type(), typeid(vb6_ast::statements::localVarDeclStmt));
-  EXPECT_EQ(st[5].get().type(), typeid(vb6_ast::statements::localVarDeclStmt));
-  EXPECT_EQ(st[6].get().type(), typeid(vb6_ast::statements::redimStmt));
-  EXPECT_EQ(st[7].get().type(), typeid(vb6_ast::statements::exitStmt));
-  EXPECT_EQ(st[8].get().type(), typeid(vb6_ast::statements::gotoStmt));
-  EXPECT_EQ(st[9].get().type(), typeid(vb6_ast::statements::onerrorStmt));
-  EXPECT_EQ(st[10].get().type(), typeid(vb6_ast::statements::resumeStmt));
-  EXPECT_EQ(st[11].get().type(), typeid(vb6_ast::statements::labelStmt));
-  EXPECT_EQ(st[12].get().type(), typeid(vb6_ast::statements::callStmt));
-  EXPECT_EQ(st[13].get().type(), typeid(vb6_ast::statements::callStmt));
-  EXPECT_EQ(st[14].get().type(), typeid(vb6_ast::statements::raiseeventStmt));
+  ASSERT_EQ(st.size(), 28);
+  EXPECT_TRUE(boost::get<vb6_ast::statements::assignStmt>(&st[0]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::assignStmt>(&st[1]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::assignStmt>(&st[2]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::assignStmt>(&st[3]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::localVarDeclStmt>(&st[4]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::localVarDeclStmt>(&st[5]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::redimStmt>(&st[6]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::exitStmt>(&st[7]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::gotoStmt>(&st[8]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::onerrorStmt>(&st[9]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::resumeStmt>(&st[10]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::labelStmt>(&st[11]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::callStmt>(&st[12]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::callStmt>(&st[13]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::raiseeventStmt>(&st[14]));
+  EXPECT_TRUE(boost::get<vb6_ast::empty_line>(&st[15]));
+  EXPECT_TRUE(boost::get<vb6_ast::lonely_comment>(&st[16]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::withStmt>>(&st[17]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::ifelseStmt>>(&st[18]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::whileStmt>>(&st[19]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::dowhileStmt>>(&st[20]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::dountilStmt>>(&st[21]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::loopwhileStmt>>(&st[22]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::loopuntilStmt>>(&st[23]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::doStmt>>(&st[24]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::forStmt>>(&st[25]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::selectStmt>>(&st[26]));
+  EXPECT_TRUE(boost::get<x3::forward_ast<vb6_ast::statements::foreachStmt>>(&st[27]));
 }
 
 GTEST_TEST(vb6_parser_compound_statements, With)
@@ -313,7 +333,7 @@ GTEST_TEST(vb6_parser_compound_statements, While)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
   EXPECT_EQ(st.block.size(), 1);
@@ -346,7 +366,7 @@ GTEST_TEST(vb6_parser_compound_statements, DoWhile)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
   EXPECT_EQ(st.block.size(), 1);
@@ -364,7 +384,7 @@ GTEST_TEST(vb6_parser_compound_statements, LoopWhile)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
   EXPECT_EQ(st.block.size(), 1);
@@ -382,7 +402,7 @@ GTEST_TEST(vb6_parser_compound_statements, DoUntil)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
   EXPECT_EQ(st.block.size(), 1);
@@ -400,7 +420,7 @@ GTEST_TEST(vb6_parser_compound_statements, LoopUntil)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   EXPECT_EQ(tmp.func_name, "cond");
   EXPECT_EQ(tmp.params.size(), 2);
   EXPECT_EQ(st.block.size(), 1);
@@ -424,9 +444,9 @@ GTEST_TEST(vb6_parser_compound_statements, For)
   EXPECT_FALSE(st.for_variable.ctx.leading_dot);
   EXPECT_TRUE(st.for_variable.ctx.elements.empty());
 
-  auto& tmp1 = boost::get<vb6_ast::const_expr>(st.from.get()).get();
-  auto& tmp2 = boost::get<vb6_ast::const_expr>(st.to.get()).get();
-  auto& tmp3 = boost::get<vb6_ast::const_expr>(st.step.get()).get();
+  auto& tmp1 = boost::get<vb6_ast::const_expr>(st.from.get());
+  auto& tmp2 = boost::get<vb6_ast::const_expr>(st.to.get());
+  auto& tmp3 = boost::get<vb6_ast::const_expr>(st.step.get());
 
   EXPECT_EQ(boost::get<vb6_ast::integer_dec>(tmp1).val, 1);
   EXPECT_EQ(boost::get<vb6_ast::integer_dec>(tmp2).val, 100);
@@ -451,7 +471,7 @@ GTEST_TEST(vb6_parser_compound_statements, ForEach)
   EXPECT_FALSE(st.for_variable.ctx.leading_dot);
   EXPECT_TRUE(st.for_variable.ctx.elements.empty());
 
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(st.container.get());
+  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(st.container);
 
   EXPECT_TRUE(tmp1.ctx.elements.empty());
   EXPECT_EQ(tmp1.var, "Items");
@@ -473,7 +493,7 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse_substatements)
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
 
-    auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition.get());
+    auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition);
 
     EXPECT_EQ(tmp1.var, "cond1");
     EXPECT_EQ(ast1.block.size(), 3);
@@ -490,7 +510,7 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse_substatements)
     ASSERT_TRUE(res) << "stopped at: " << sv;
     EXPECT_TRUE(sv.empty());
 
-    auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition.get());
+    auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition);
 
     EXPECT_EQ(tmp2.var, "cond2");
     EXPECT_EQ(ast2.block.size(), 3);
@@ -529,17 +549,17 @@ GTEST_TEST(vb6_parser_compound_statements, IfElse)
   EXPECT_TRUE(sv.empty());
 
   EXPECT_EQ(ast.first_branch.block.size(), 1);
-  auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
+  auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition);
   EXPECT_EQ(tmp0.var, "cond1");
 
   ASSERT_EQ(ast.if_branches.size(), 2);
 
   EXPECT_EQ(ast.if_branches[0].block.size(), 1);
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[0].condition.get());
+  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[0].condition);
   EXPECT_EQ(tmp1.var, "cond2");
 
   EXPECT_EQ(ast.if_branches[1].block.size(), 1);
-  auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition.get());
+  auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition);
   EXPECT_EQ(tmp2.var, "cond3");
 
   ASSERT_TRUE(ast.else_branch.has_value());
@@ -566,23 +586,21 @@ GTEST_TEST(vb6_parser_compound_statements, Select)
   ASSERT_TRUE(res) << "stopped at: " << sv;
   EXPECT_TRUE(sv.empty());
 
-  ASSERT_EQ(st.condition.get().type(), typeid(vb6_ast::decorated_variable));
-  EXPECT_EQ(boost::get<vb6_ast::decorated_variable>(st.condition.get()).var, "Type");
+  ASSERT_TRUE(boost::get<vb6_ast::decorated_variable>(&st.condition));
+  EXPECT_EQ(boost::get<vb6_ast::decorated_variable>(st.condition).var, "Type");
   EXPECT_EQ(st.blocks.size(), 2);
 
-  ASSERT_EQ(st.blocks[0].case_expr.get().type(), typeid(vb6_ast::const_expr));
+  ASSERT_TRUE(boost::get<vb6_ast::const_expr>(&st.blocks[0].case_expr));
   EXPECT_EQ(boost::get<vb6_ast::integer_dec>(
-              boost::get<vb6_ast::const_expr>(st.blocks[0].case_expr.get()).get()
-            ).val, 0);
+              boost::get<vb6_ast::const_expr>(st.blocks[0].case_expr)).val, 0);
   ASSERT_EQ(st.blocks[0].block.size(), 2);
-  EXPECT_EQ(st.blocks[0].block[0].get().type(), typeid(vb6_ast::statements::localVarDeclStmt));
-  EXPECT_EQ(st.blocks[0].block[1].get().type(), typeid(vb6_ast::statements::callStmt));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::localVarDeclStmt>(&st.blocks[0].block[0]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::callStmt>(&st.blocks[0].block[1]));
 
-  ASSERT_EQ(st.blocks[1].case_expr.get().type(), typeid(vb6_ast::const_expr));
+  ASSERT_TRUE(boost::get<vb6_ast::const_expr>(&st.blocks[1].case_expr));
   EXPECT_EQ(boost::get<vb6_ast::integer_dec>(
-              boost::get<vb6_ast::const_expr>(st.blocks[1].case_expr.get()).get()
-            ).val, 1);
+              boost::get<vb6_ast::const_expr>(st.blocks[1].case_expr)).val, 1);
   ASSERT_EQ(st.blocks[1].block.size(), 6);
-  EXPECT_EQ(st.blocks[1].block[0].get().type(), typeid(vb6_ast::lonely_comment));
-  EXPECT_EQ(st.blocks[1].block[1].get().type(), typeid(vb6_ast::statements::localVarDeclStmt));
+  EXPECT_TRUE(boost::get<vb6_ast::lonely_comment>(&st.blocks[1].block[0]));
+  EXPECT_TRUE(boost::get<vb6_ast::statements::localVarDeclStmt>(&st.blocks[1].block[1]));
 }

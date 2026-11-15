@@ -64,7 +64,7 @@ TEST_CASE("empty_lines", "[vb6_parser_simple]")
   REQUIRE(ast.size() == 3);
 
   CHECK(boost::get<vb6_ast::lonely_comment>(ast[0]).content == " comment1");
-  REQUIRE_NOTHROW(boost::get<vb6_ast::empty_line>(ast[1]));
+  REQUIRE(boost::get<vb6_ast::empty_line>(&ast[1]));
   CHECK(boost::get<vb6_ast::lonely_comment>(ast[2]).content == " comment2");
 }
 
@@ -137,14 +137,14 @@ TEST_CASE("type_identifier", "[vb6_parser_simple]")
   INFO("stopped at: " << sv);
   REQUIRE(res);
   CHECK(sv.empty());
-  CHECK(type.value.get().type() == typeid(vb6_ast::NativeType));
-  CHECK(boost::get<vb6_ast::NativeType>(type.value.get()) == vb6_ast::NativeType::Long);
+  CHECK(boost::get<vb6_ast::NativeType>(&type.value));
+  CHECK(boost::get<vb6_ast::NativeType>(type.value) == vb6_ast::NativeType::Long);
 
   auto [any_res, any_sv] = test_grammar("Any", vb6_grammar::type_identifier, type);
   INFO("stopped at: " << any_sv);
   REQUIRE(any_res);
   CHECK(any_sv.empty());
-  CHECK(boost::get<vb6_ast::NativeType>(type.value.get()) == vb6_ast::NativeType::Any);
+  CHECK(boost::get<vb6_ast::NativeType>(type.value) == vb6_ast::NativeType::Any);
 }
 
 TEST_CASE("complex_type_identifier", "[vb6_parser_simple]")
@@ -170,7 +170,7 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::quoted_string>(ast.get()) == "una stringa");
+    CHECK(boost::get<vb6_ast::quoted_string>(ast) == "una stringa");
   }
 
   SECTION("2")
@@ -180,7 +180,7 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<bool>(ast.get()));
+    CHECK(boost::get<bool>(ast));
   }
 
   SECTION("3")
@@ -190,7 +190,7 @@ TEST_CASE("const_expression_non_numeric", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    REQUIRE_NOTHROW(boost::get<vb6_ast::nothing>(ast.get()));
+    REQUIRE(boost::get<vb6_ast::nothing>(&ast));
   }
 }
 
@@ -205,7 +205,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::integer_dec>(ast.get()).val == 1234);
+    CHECK(boost::get<vb6_ast::integer_dec>(ast).val == 1234);
   }
 
   SECTION("2")
@@ -215,7 +215,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::long_dec>(ast.get()).val == 1234);
+    CHECK(boost::get<vb6_ast::long_dec>(ast).val == 1234);
   }
 
   SECTION("3")
@@ -225,7 +225,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::long_hex>(ast.get()).val == int(0xcafedead));
+    CHECK(boost::get<vb6_ast::long_hex>(ast).val == int(0xcafedead));
   }
 
   SECTION("4")
@@ -235,7 +235,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::long_oct>(ast.get()).val == 01234);
+    CHECK(boost::get<vb6_ast::long_oct>(ast).val == 01234);
   }
 
   SECTION("5")
@@ -245,7 +245,7 @@ TEST_CASE("const_expression_integers", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<vb6_ast::integer_dec>(ast.get()).val == 1234);
+    CHECK(boost::get<vb6_ast::integer_dec>(ast).val == 1234);
   }
 }
 
@@ -260,7 +260,7 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<float>(ast.get()) == 1234.0f);
+    CHECK(boost::get<float>(ast) == 1234.0f);
   }
 
   SECTION("2")
@@ -270,7 +270,7 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<double>(ast.get()) == 1234.0);
+    CHECK(boost::get<double>(ast) == 1234.0);
   }
 
   SECTION("1")
@@ -280,7 +280,7 @@ TEST_CASE("const_expression_floats", "[vb6_parser_simple]")
     INFO("stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    CHECK(boost::get<float>(ast.get()) == 2.8f);
+    CHECK(boost::get<float>(ast) == 2.8f);
   }
 }
 
@@ -337,7 +337,7 @@ TEST_CASE("single_var_declaration", "[vb6_parser_simple]")
     CHECK(P.type.has_value());
     if(P.type)
     {
-      CHECK(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::Long);
+      CHECK(boost::get<vb6_ast::NativeType>(P.type->value) == vb6_ast::NativeType::Long);
     }
   }
 
@@ -352,7 +352,7 @@ TEST_CASE("single_var_declaration", "[vb6_parser_simple]")
     CHECK(P.type.has_value());
     if(P.type)
     {
-      CHECK(boost::get<vb6_ast::NativeType>(P.type->value.get()) == vb6_ast::NativeType::String);
+      CHECK(boost::get<vb6_ast::NativeType>(P.type->value) == vb6_ast::NativeType::String);
     }
   }
 }
@@ -374,7 +374,7 @@ TEST_CASE("record_declaration", "[vb6_parser_tests]")
   CHECK(rec.members[0].type.has_value());
   if(rec.members[0].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(rec.members[0].type->value.get()) == vb6_ast::NativeType::String);
+    CHECK(boost::get<vb6_ast::NativeType>(rec.members[0].type->value) == vb6_ast::NativeType::String);
   }
   CHECK(!rec.members[0].construct);
 
@@ -382,7 +382,7 @@ TEST_CASE("record_declaration", "[vb6_parser_tests]")
   CHECK(rec.members[1].type.has_value());
   if(rec.members[1].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(rec.members[1].type->value.get()) == vb6_ast::NativeType::Integer);
+    CHECK(boost::get<vb6_ast::NativeType>(rec.members[1].type->value) == vb6_ast::NativeType::Integer);
   }
   CHECK(!rec.members[1].construct);
 }
@@ -425,7 +425,7 @@ TEST_CASE("global_var_declaration", "[vb6_parser_tests]")
   CHECK(vars.vars[0].type.has_value());
   if(vars.vars[0].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()) == vb6_ast::NativeType::Long);
+    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value) == vb6_ast::NativeType::Long);
   }
 
   CHECK(vars.vars[1].name == "v1");
@@ -437,7 +437,7 @@ TEST_CASE("global_var_declaration", "[vb6_parser_tests]")
   CHECK(vars.vars[2].type.has_value());
   if(vars.vars[2].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[2].type->value.get()) == vb6_ast::NativeType::Object);
+    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[2].type->value) == vb6_ast::NativeType::Object);
   }
 
   CHECK(vars.vars[3].name == "ptr");
@@ -446,7 +446,7 @@ TEST_CASE("global_var_declaration", "[vb6_parser_tests]")
   if(vars.vars[3].type)
   {
     auto const& user_type =
-      boost::get<vb6_ast::complex_type_identifier>(vars.vars[3].type->value.get());
+      boost::get<vb6_ast::complex_type_identifier>(vars.vars[3].type->value);
     REQUIRE(user_type.library_or_module.has_value());
     CHECK(*user_type.library_or_module == "Module");
     CHECK(user_type.name == "MyRec");
@@ -457,7 +457,7 @@ TEST_CASE("global_var_declaration", "[vb6_parser_tests]")
   CHECK(vars.vars[4].type.has_value());
   if(vars.vars[4].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[4].type->value.get()) == vb6_ast::NativeType::Boolean);
+    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[4].type->value) == vb6_ast::NativeType::Boolean);
   }
 }
 
@@ -475,26 +475,26 @@ TEST_CASE("const_var_declaration1", "[vb6_parser_tests]")
   CHECK(cvars[0].var.name == "e");
   if(cvars[0].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()) == vb6_ast::NativeType::Single);
+    CHECK(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value) == vb6_ast::NativeType::Single);
   }
   CHECK(!cvars[0].var.construct);
-  CHECK(boost::get<float>(cvars[0].value.get()) == 2.8f);
+  CHECK(boost::get<float>(cvars[0].value) == 2.8f);
 
   CHECK(cvars[1].var.name == "pi");
   if(cvars[1].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(cvars[1].var.type->value.get()) == vb6_ast::NativeType::Double);
+    CHECK(boost::get<vb6_ast::NativeType>(cvars[1].var.type->value) == vb6_ast::NativeType::Double);
   }
   CHECK(!cvars[1].var.construct);
-  CHECK(boost::get<float>(cvars[1].value.get()) == 3.14f);
+  CHECK(boost::get<float>(cvars[1].value) == 3.14f);
 
   CHECK(cvars[2].var.name == "u");
   if(cvars[2].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(cvars[2].var.type->value.get()) == vb6_ast::NativeType::Integer);
+    CHECK(boost::get<vb6_ast::NativeType>(cvars[2].var.type->value) == vb6_ast::NativeType::Integer);
   }
   CHECK(!cvars[2].var.construct);
-  CHECK(boost::get<vb6_ast::integer_dec>(cvars[2].value.get()).val == -1);
+  CHECK(boost::get<vb6_ast::integer_dec>(cvars[2].value).val == -1);
 }
 
 TEST_CASE("const_var_declaration2", "[vb6_parser_tests]")
@@ -511,10 +511,10 @@ TEST_CASE("const_var_declaration2", "[vb6_parser_tests]")
   CHECK(cvars[0].var.name == "PI");
   if(cvars[0].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value.get()) == vb6_ast::NativeType::Double);
+    CHECK(boost::get<vb6_ast::NativeType>(cvars[0].var.type->value) == vb6_ast::NativeType::Double);
   }
   CHECK(!cvars[0].var.construct);
-  CHECK(boost::get<float>(cvars[0].value.get()) == 3.1415f);
+  CHECK(boost::get<float>(cvars[0].value) == 3.1415f);
 }
 
 TEST_CASE("param_decl", "[vb6_parser_tests]")
@@ -536,7 +536,7 @@ TEST_CASE("param_decl", "[vb6_parser_tests]")
   CHECK(fp.var.type.has_value());
   if(fp.var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(fp.var.type->value.get()) == vb6_ast::NativeType::String);
+    CHECK(boost::get<vb6_ast::NativeType>(fp.var.type->value) == vb6_ast::NativeType::String);
   }
   CHECK(fp.defvalue.has_value());
   if(fp.defvalue)
@@ -567,7 +567,7 @@ TEST_CASE("param_list_decl", "[vb6_parser_tests]")
   CHECK(fps[0].var.type.has_value());
   if(fps[0].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(fps[0].var.type->value.get()) == vb6_ast::NativeType::String);
+    CHECK(boost::get<vb6_ast::NativeType>(fps[0].var.type->value) == vb6_ast::NativeType::String);
   }
   CHECK(!fps[0].defvalue);
 
@@ -582,7 +582,7 @@ TEST_CASE("param_list_decl", "[vb6_parser_tests]")
   CHECK(fps[1].var.type.has_value());
   if(fps[1].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(fps[1].var.type->value.get()) == vb6_ast::NativeType::Integer);
+    CHECK(boost::get<vb6_ast::NativeType>(fps[1].var.type->value) == vb6_ast::NativeType::Integer);
   }
   CHECK(!fps[1].defvalue);
 }
@@ -615,7 +615,7 @@ TEST_CASE("function_head", "[vb6_parser_tests]")
   CHECK(fh.name == "OneFunc");
   CHECK(fh.params.size() == 2);
   REQUIRE(fh.return_type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Integer);
+  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value) == vb6_ast::NativeType::Integer);
 }
 
 TEST_CASE("function_head_no_params", "[vb6_parser_tests]")
@@ -631,7 +631,7 @@ TEST_CASE("function_head_no_params", "[vb6_parser_tests]")
   CHECK(fh.name == "NoParamFunc");
   CHECK(fh.params.empty());
   REQUIRE(fh.return_type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Object);
+  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value) == vb6_ast::NativeType::Object);
 }
 
 TEST_CASE("function_head_qualified_return_type", "[vb6_parser_tests]")
@@ -645,7 +645,7 @@ TEST_CASE("function_head_qualified_return_type", "[vb6_parser_tests]")
   REQUIRE(fh.return_type.has_value());
 
   auto const& return_type =
-    boost::get<vb6_ast::complex_type_identifier>(fh.return_type->value.get());
+    boost::get<vb6_ast::complex_type_identifier>(fh.return_type->value);
   REQUIRE(return_type.library_or_module.has_value());
   CHECK(*return_type.library_or_module == "vB");
   CHECK(return_type.name == "fOrm");
@@ -672,7 +672,7 @@ TEST_CASE("parameterless_procedure_heads_without_parentheses", "[vb6_parser_test
   CHECK(fh.name == "NoParamFunction");
   CHECK(fh.params.empty());
   REQUIRE(fh.return_type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value.get()) == vb6_ast::NativeType::Object);
+  CHECK(boost::get<vb6_ast::NativeType>(fh.return_type->value) == vb6_ast::NativeType::Object);
 }
 
 TEST_CASE("subroutine_head", "[vb6_parser_tests]")
@@ -727,7 +727,7 @@ TEST_CASE("subroutine_head_with_optional_params", "[vb6_parser_tests]")
   CHECK(sh.params[0].var.name == "str");
   if(sh.params[0].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(sh.params[0].var.type->value.get()) == vb6_ast::NativeType::String);
+    CHECK(boost::get<vb6_ast::NativeType>(sh.params[0].var.type->value) == vb6_ast::NativeType::String);
   }
   CHECK(!sh.params[0].var.construct);
   CHECK(!sh.params[0].isoptional);
@@ -741,7 +741,7 @@ TEST_CASE("subroutine_head_with_optional_params", "[vb6_parser_tests]")
   CHECK(sh.params[1].var.name == "valid");
   if(sh.params[1].var.type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(sh.params[1].var.type->value.get()) == vb6_ast::NativeType::Boolean);
+    CHECK(boost::get<vb6_ast::NativeType>(sh.params[1].var.type->value) == vb6_ast::NativeType::Boolean);
   }
   CHECK(!sh.params[1].var.construct);
   CHECK(sh.params[1].isoptional);
@@ -795,7 +795,7 @@ TEST_CASE("property_head", "[vb6_parser_tests]")
     CHECK(ast.name == "Width");
     CHECK(ast.params.size() == 0);
     REQUIRE(ast.return_type.has_value());
-    CHECK(boost::get<vb6_ast::NativeType>(ast.return_type->value.get()) == vb6_ast::NativeType::Integer);
+    CHECK(boost::get<vb6_ast::NativeType>(ast.return_type->value) == vb6_ast::NativeType::Integer);
   }
 }
 
@@ -829,7 +829,7 @@ TEST_CASE("dll_function_declaration", "[vb6_parser_tests]")
   CHECK(extfunc.return_type.has_value());
   if(extfunc.return_type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(extfunc.return_type->value.get()) == vb6_ast::NativeType::Long);
+    CHECK(boost::get<vb6_ast::NativeType>(extfunc.return_type->value) == vb6_ast::NativeType::Long);
   }
   CHECK(extfunc.alias == "Beep");
   CHECK(extfunc.params.size() == 2);
@@ -846,11 +846,11 @@ TEST_CASE("identifier_context", "[vb6_parser_tests]")
 
   CHECK(!ctx.leading_dot);
   REQUIRE(ctx.elements.size() == 3);
-  CHECK(boost::get<std::string>(ctx.elements[0].get()) == "var1");
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(ctx.elements[1].get()).get();
+  CHECK(boost::get<std::string>(ctx.elements[0]) == "var1");
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(ctx.elements[1]).get();
   CHECK(tmp.func_name == "func");
   CHECK(tmp.params.empty());
-  CHECK(boost::get<std::string>(ctx.elements[2].get()) == "pnt1");
+  CHECK(boost::get<std::string>(ctx.elements[2]) == "pnt1");
 }
 
 TEST_CASE("decorated_variable", "[vb6_parser_tests]")
@@ -863,11 +863,11 @@ TEST_CASE("decorated_variable", "[vb6_parser_tests]")
 
   CHECK(!dec_var.ctx.leading_dot);
   REQUIRE(dec_var.ctx.elements.size() == 3);
-  CHECK(boost::get<std::string>(dec_var.ctx.elements[0].get()) == "var1");
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(dec_var.ctx.elements[1].get()).get();
+  CHECK(boost::get<std::string>(dec_var.ctx.elements[0]) == "var1");
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(dec_var.ctx.elements[1]).get();
   CHECK(tmp.func_name == "func");
   CHECK(tmp.params.empty());
-  CHECK(boost::get<std::string>(dec_var.ctx.elements[2].get()) == "pnt1");
+  CHECK(boost::get<std::string>(dec_var.ctx.elements[2]) == "pnt1");
   CHECK(dec_var.var == "X");
 }
 
@@ -964,11 +964,11 @@ TEST_CASE("declaration_block")
 
   REQUIRE(decls.size() == 5);
 
-  REQUIRE_NOTHROW(boost::get<vb6_ast::const_var_stat>(decls[0].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::global_var_decls>(decls[1].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::externalSub>(decls[2].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::vb_enum>(decls[3].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::record>(decls[4].get()));
+  REQUIRE(boost::get<vb6_ast::const_var_stat>(&decls[0]));
+  REQUIRE(boost::get<vb6_ast::global_var_decls>(&decls[1]));
+  REQUIRE(boost::get<vb6_ast::externalSub>(&decls[2]));
+  REQUIRE(boost::get<vb6_ast::vb_enum>(&decls[3]));
+  REQUIRE(boost::get<vb6_ast::record>(&decls[4]));
 }
 
 TEST_CASE("bas_unit_STRICT_MODULE_STRUCTURE", "[vb6_parser_tests]")
@@ -1022,26 +1022,26 @@ TEST_CASE("bas_unit_STRICT_MODULE_STRUCTURE", "[vb6_parser_tests]")
     CHECK(ast.opts.items[0] == vb6_ast::module_option::explicit_);
     CHECK(ast.opts.items[1] == vb6_ast::module_option::base_0);
 #else
-    CHECK(boost::get<vb6_ast::module_option>(ast.opts.items[0].get()) == vb6_ast::module_option::explicit_);
-    CHECK(boost::get<vb6_ast::module_option>(ast.opts.items[1].get()) == vb6_ast::module_option::base_0);
+    CHECK(boost::get<vb6_ast::module_option>(ast.opts.items[0]) == vb6_ast::module_option::explicit_);
+    CHECK(boost::get<vb6_ast::module_option>(ast.opts.items[1]) == vb6_ast::module_option::base_0);
 #endif
-    REQUIRE_NOTHROW(boost::get<vb6_ast::empty_line>(ast.opts.items[2].get()));
-    REQUIRE_NOTHROW(boost::get<vb6_ast::lonely_comment>(ast.opts.items[3].get()));
+    REQUIRE(boost::get<vb6_ast::empty_line>(&ast.opts.items[2]));
+    REQUIRE(boost::get<vb6_ast::lonely_comment>(&ast.opts.items[3]));
   }
 
   CHECK(ast.declarations.size() == 3);
   if(ast.declarations.size() == 3)
   {
-    REQUIRE_NOTHROW(boost::get<vb6_ast::const_var_stat>(ast.declarations[0].get()));
-    REQUIRE_NOTHROW(boost::get<vb6_ast::global_var_decls>(ast.declarations[1].get()));
-    REQUIRE_NOTHROW(boost::get<vb6_ast::vb_enum>(ast.declarations[2].get()));
+    REQUIRE(boost::get<vb6_ast::const_var_stat>(&ast.declarations[0]));
+    REQUIRE(boost::get<vb6_ast::global_var_decls>(&ast.declarations[1]));
+    REQUIRE(boost::get<vb6_ast::vb_enum>(&ast.declarations[2]));
   }
 
   CHECK(ast.functions.size() == 2);
   if(ast.functions.size() == 2)
   {
-    REQUIRE_NOTHROW(boost::get<vb6_ast::subDef>(ast.functions[0].get())));
-    REQUIRE_NOTHROW(boost::get<vb6_ast::functionDef>(ast.functions[1].get())));
+    REQUIRE(boost::get<vb6_ast::subDef>(&ast.functions[0])));
+    REQUIRE(boost::get<vb6_ast::functionDef>(&ast.functions[1])));
   }
 }
 #endif
@@ -1069,8 +1069,7 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
                   End Property
                   'Property Set my_value(ByVal v As Long)
                   'End Property
-                  'Property Let my_value(ByVal v As Long)
-                  'End Property
+                  'Property Let my_value(ByVal v As Long) : End Property
                   )vb";
   auto [res, sv] = test_grammar(str, vb6_grammar::basModDef, ast);
   INFO("stopped at: " << sv);
@@ -1080,26 +1079,26 @@ TEST_CASE("bas_unit", "[vb6_parser_tests]")
   vb6_ast_printer P(std::cout);
   P(ast);
 
-  REQUIRE(ast.size() == 16);
+  REQUIRE(ast.size() == 15);
 
-  CHECK(boost::get<vb6_ast::module_attribute>(ast[0].get()).first == "ModuleName");
-  CHECK(boost::get<vb6_ast::module_attribute>(ast[1].get()).first == "ProgID");
+  CHECK(boost::get<vb6_ast::module_attribute>(ast[0]).first == "ModuleName");
+  CHECK(boost::get<vb6_ast::module_attribute>(ast[1]).first == "ProgID");
 
-  CHECK(boost::get<vb6_ast::module_option>(ast[2].get()) == vb6_ast::module_option::explicit_);
-  CHECK(boost::get<vb6_ast::module_option>(ast[3].get()) == vb6_ast::module_option::base_0);
+  CHECK(boost::get<vb6_ast::module_option>(ast[2]) == vb6_ast::module_option::explicit_);
+  CHECK(boost::get<vb6_ast::module_option>(ast[3]) == vb6_ast::module_option::base_0);
 
-  REQUIRE_NOTHROW(boost::get<vb6_ast::empty_line>(ast[4].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::lonely_comment>(ast[5].get()));
+  REQUIRE(boost::get<vb6_ast::empty_line>(&ast[4]));
+  REQUIRE(boost::get<vb6_ast::lonely_comment>(&ast[5]));
 
-  REQUIRE_NOTHROW(boost::get<vb6_ast::const_var_stat>(boost::get<vb6_ast::declaration>(ast[6].get())));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::global_var_decls>(boost::get<vb6_ast::declaration>(ast[7].get())));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::vb_enum>(boost::get<vb6_ast::declaration>(ast[8].get())));
+  REQUIRE(boost::get<vb6_ast::const_var_stat>(boost::get<vb6_ast::declaration>(&ast[6])));
+  REQUIRE(boost::get<vb6_ast::global_var_decls>(boost::get<vb6_ast::declaration>(&ast[7])));
+  REQUIRE(boost::get<vb6_ast::vb_enum>(boost::get<vb6_ast::declaration>(&ast[8])));
 
-  REQUIRE_NOTHROW(boost::get<vb6_ast::subDef>(ast[9].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::functionDef>(ast[10].get()));
-  REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[11].get()));
-  //REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[12].get()));
-  //REQUIRE_NOTHROW(boost::get<vb6_ast::propertyDef>(ast[13].get()));
+  REQUIRE(boost::get<vb6_ast::subDef>(&ast[9]));
+  REQUIRE(boost::get<vb6_ast::functionDef>(&ast[10]));
+  REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[11]));
+  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[12]));
+  //REQUIRE(boost::get<vb6_ast::propertyDef>(&ast[13]));
 }
 
 TEST_CASE("trailing_comment", "[vb6_parser_tests]")
@@ -1120,7 +1119,7 @@ TEST_CASE("trailing_comment", "[vb6_parser_tests]")
   CHECK(vars.vars[0].type.has_value());
   if(vars.vars[0].type)
   {
-    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value.get()) == vb6_ast::NativeType::Long);
+    CHECK(boost::get<vb6_ast::NativeType>(vars.vars[0].type->value) == vb6_ast::NativeType::Long);
   }
 }
 

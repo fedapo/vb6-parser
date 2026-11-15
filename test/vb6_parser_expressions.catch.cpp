@@ -49,9 +49,9 @@ TEST_CASE("expression_operators", "[vb6_parser_expressions]")
     INFO("source: " << source << ", stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    REQUIRE(ast.get().type() == typeid(x3::forward_ast<vb6_ast::binary_expression>));
+    REQUIRE(boost::get<x3::forward_ast<vb6_ast::binary_expression>>(&ast));
     auto const& binary =
-      boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+      boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
     REQUIRE(binary.rest.size() == 1);
     CHECK(binary.rest[0].op == expected_op);
   }
@@ -69,9 +69,9 @@ TEST_CASE("expression_operators", "[vb6_parser_expressions]")
     INFO("source: " << source << ", stopped at: " << sv);
     REQUIRE(res);
     CHECK(sv.empty());
-    REQUIRE(ast.get().type() == typeid(x3::forward_ast<vb6_ast::unary_expression>));
+    REQUIRE(boost::get<x3::forward_ast<vb6_ast::unary_expression>>(&ast));
     auto const& unary =
-      boost::get<x3::forward_ast<vb6_ast::unary_expression>>(ast.get()).get();
+      boost::get<x3::forward_ast<vb6_ast::unary_expression>>(ast).get();
     CHECK(unary.op == expected_op);
   }
 }
@@ -84,12 +84,12 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(res);
   CHECK(sv.empty());
   auto const& addition =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   REQUIRE(addition.rest.size() == 1);
   CHECK(addition.rest[0].op == vb6_ast::operator_type::plus);
   auto const& multiplication =
     boost::get<x3::forward_ast<vb6_ast::binary_expression>>(
-      addition.rest[0].operand.get()).get();
+      addition.rest[0].operand).get();
   REQUIRE(multiplication.rest.size() == 1);
   CHECK(multiplication.rest[0].op == vb6_ast::operator_type::mult);
 
@@ -99,12 +99,12 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(parenthesized_res);
   CHECK(parenthesized_sv.empty());
   auto const& parenthesized_multiplication =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   REQUIRE(parenthesized_multiplication.rest.size() == 1);
   CHECK(parenthesized_multiplication.rest[0].op == vb6_ast::operator_type::mult);
   auto const& parenthesized_addition =
     boost::get<x3::forward_ast<vb6_ast::binary_expression>>(
-      parenthesized_multiplication.lhs.get()).get();
+      parenthesized_multiplication.lhs).get();
   CHECK(parenthesized_addition.rest[0].op == vb6_ast::operator_type::plus);
 
   auto [power_res, power_sv] = test_grammar("2 ^ 3 ^ 2", vb6_grammar::expression, ast);
@@ -112,12 +112,12 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(power_res);
   CHECK(power_sv.empty());
   auto const& power =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   REQUIRE(power.rest.size() == 1);
   CHECK(power.rest[0].op == vb6_ast::operator_type::exp);
   auto const& right_power =
     boost::get<x3::forward_ast<vb6_ast::binary_expression>>(
-      power.rest[0].operand.get()).get();
+      power.rest[0].operand).get();
   CHECK(right_power.rest[0].op == vb6_ast::operator_type::exp);
 
   auto [unary_res, unary_sv] = test_grammar("-2 ^ 2", vb6_grammar::expression, ast);
@@ -125,10 +125,10 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(unary_res);
   CHECK(unary_sv.empty());
   auto const& negation =
-    boost::get<x3::forward_ast<vb6_ast::unary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::unary_expression>>(ast).get();
   CHECK(negation.op == vb6_ast::operator_type::minus);
   auto const& negated_power =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(negation.operand.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(negation.operand).get();
   CHECK(negated_power.rest[0].op == vb6_ast::operator_type::exp);
 
   auto [not_res, not_sv] =
@@ -137,14 +137,14 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(not_res);
   CHECK(not_sv.empty());
   auto const& conjunction =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   CHECK(conjunction.rest[0].op == vb6_ast::operator_type::and_);
   auto const& negated_comparison =
-    boost::get<x3::forward_ast<vb6_ast::unary_expression>>(conjunction.lhs.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::unary_expression>>(conjunction.lhs).get();
   CHECK(negated_comparison.op == vb6_ast::operator_type::not_);
   auto const& comparison =
     boost::get<x3::forward_ast<vb6_ast::binary_expression>>(
-      negated_comparison.operand.get()).get();
+      negated_comparison.operand).get();
   CHECK(comparison.rest[0].op == vb6_ast::operator_type::equal);
 
   auto [modulo_res, modulo_sv] =
@@ -153,10 +153,10 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(modulo_res);
   CHECK(modulo_sv.empty());
   auto const& modulo =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   CHECK(modulo.rest[0].op == vb6_ast::operator_type::mod);
   auto const& integer_division =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(modulo.lhs.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(modulo.lhs).get();
   CHECK(integer_division.rest[0].op == vb6_ast::operator_type::div_int);
 
   auto [concat_res, concat_sv] =
@@ -165,10 +165,10 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(concat_res);
   CHECK(concat_sv.empty());
   auto const& concatenation =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   CHECK(concatenation.rest[0].op == vb6_ast::operator_type::amp);
   auto const& concatenation_addition =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(concatenation.lhs.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(concatenation.lhs).get();
   CHECK(concatenation_addition.rest[0].op == vb6_ast::operator_type::plus);
 
   auto [logical_res, logical_sv] =
@@ -177,11 +177,11 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(logical_res);
   CHECK(logical_sv.empty());
   auto const& disjunction =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   CHECK(disjunction.rest[0].op == vb6_ast::operator_type::or_);
   auto const& conjunction_rhs =
     boost::get<x3::forward_ast<vb6_ast::binary_expression>>(
-      disjunction.rest[0].operand.get()).get();
+      disjunction.rest[0].operand).get();
   CHECK(conjunction_rhs.rest[0].op == vb6_ast::operator_type::and_);
 
   auto [levels_res, levels_sv] =
@@ -190,12 +190,12 @@ TEST_CASE("expression_operator_precedence", "[vb6_parser_expressions]")
   REQUIRE(levels_res);
   CHECK(levels_sv.empty());
   auto const& implication =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(ast).get();
   CHECK(implication.rest[0].op == vb6_ast::operator_type::imp);
   auto const& equivalence =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(implication.lhs.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(implication.lhs).get();
   CHECK(equivalence.rest[0].op == vb6_ast::operator_type::eqv);
   auto const& exclusive_or =
-    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(equivalence.lhs.get()).get();
+    boost::get<x3::forward_ast<vb6_ast::binary_expression>>(equivalence.lhs).get();
   CHECK(exclusive_or.rest[0].op == vb6_ast::operator_type::xor_);
 }

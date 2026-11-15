@@ -25,9 +25,7 @@ TEST_CASE("Assignment_0", "[vb6_parser_statements]")
   CHECK(st.var.var == "var1");
   CHECK(!st.var.ctx.leading_dot);
   CHECK(st.var.ctx.elements.empty());
-  CHECK(boost::get<vb6_ast::quoted_string>(
-              boost::get<vb6_ast::const_expr>(st.rhs.get()).get()
-            ) == "  ciao");
+  CHECK(boost::get<vb6_ast::quoted_string>(boost::get<vb6_ast::const_expr>(st.rhs)) == "  ciao");
 }
 
 TEST_CASE("Assignment_1", "[vb6_parser_statements]")
@@ -42,7 +40,7 @@ TEST_CASE("Assignment_1", "[vb6_parser_statements]")
   CHECK(st.var.var == "var2");
   CHECK(!st.var.ctx.leading_dot);
   CHECK(st.var.ctx.elements.empty());
-  CHECK(boost::get<float>(boost::get<vb6_ast::const_expr>(st.rhs.get()).get()) == 54.7f);
+  CHECK(boost::get<float>(boost::get<vb6_ast::const_expr>(st.rhs)) == 54.7f);
 }
 
 TEST_CASE("Assignment_2", "[vb6_parser_statements]")
@@ -57,7 +55,7 @@ TEST_CASE("Assignment_2", "[vb6_parser_statements]")
   CHECK(st.var.var == "var3");
   CHECK(!st.var.ctx.leading_dot);
   CHECK(st.var.ctx.elements.empty());
-  auto& func = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.rhs.get()).get();
+  auto& func = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.rhs).get();
   CHECK(func.func_name == "Func");
 }
 
@@ -91,7 +89,7 @@ TEST_CASE("LocalVarDecl_1", "[vb6_parser_statements]")
   CHECK(st.vars[0].name == "var");
   REQUIRE(st.vars[0].type.has_value());
   auto const& form_type =
-    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value.get());
+    boost::get<vb6_ast::complex_type_identifier>(st.vars[0].type->value);
   CHECK(!form_type.library_or_module.has_value());
   CHECK(form_type.name == "Form");
 }
@@ -111,12 +109,12 @@ TEST_CASE("LocalVarDecl_2", "[vb6_parser_statements]")
   CHECK(!st.vars[0].construct);
   CHECK(st.vars[0].name == "var1");
   REQUIRE(st.vars[0].type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(st.vars[0].type->value.get()) == vb6_ast::NativeType::String);
+  CHECK(boost::get<vb6_ast::NativeType>(st.vars[0].type->value) == vb6_ast::NativeType::String);
 
   CHECK(!st.vars[1].construct);
   CHECK(st.vars[1].name == "var2");
   REQUIRE(st.vars[1].type.has_value());
-  CHECK(boost::get<vb6_ast::NativeType>(st.vars[1].type->value.get()) == vb6_ast::NativeType::Integer);
+  CHECK(boost::get<vb6_ast::NativeType>(st.vars[1].type->value) == vb6_ast::NativeType::Integer);
 }
 
 TEST_CASE("ReDim", "[vb6_parser_statements]")
@@ -276,27 +274,53 @@ TEST_CASE("statement_block", "[vb6_parser_statements]")
          Call Foo(13)
          Foo "Sea", Nothing, False
          RaiseEvent OnChange("hi!")
+
+         ' comment
+         With var : End With
+         If cond1 Then : ElseIf cond2 Then : Else : End If
+         While cond : Wend
+         Do While cond : Loop
+         Do Until cond : Loop
+         Do : Loop While cond
+         Do : Loop Until cond
+         Do : Loop
+         For i = 1 To 10  Step 2 : Next i
+         Select Case var : Case 0 : End Select
+         For Each el In container : Next el
       )vb", vb6_grammar::statements::statement_block, st);
   INFO("stopped at: " << sv);
   REQUIRE(res);
   CHECK(sv.empty());
 
-  REQUIRE(st.size() == 15);
-  CHECK(st[0].get().type() == typeid(vb6_ast::statements::assignStmt));
-  CHECK(st[1].get().type() == typeid(vb6_ast::statements::assignStmt));
-  CHECK(st[2].get().type() == typeid(vb6_ast::statements::assignStmt));
-  CHECK(st[3].get().type() == typeid(vb6_ast::statements::assignStmt));
-  CHECK(st[4].get().type() == typeid(vb6_ast::statements::localVarDeclStmt));
-  CHECK(st[5].get().type() == typeid(vb6_ast::statements::localVarDeclStmt));
-  CHECK(st[6].get().type() == typeid(vb6_ast::statements::redimStmt));
-  CHECK(st[7].get().type() == typeid(vb6_ast::statements::exitStmt));
-  CHECK(st[8].get().type() == typeid(vb6_ast::statements::gotoStmt));
-  CHECK(st[9].get().type() == typeid(vb6_ast::statements::onerrorStmt));
-  CHECK(st[10].get().type() == typeid(vb6_ast::statements::resumeStmt));
-  CHECK(st[11].get().type() == typeid(vb6_ast::statements::labelStmt));
-  CHECK(st[12].get().type() == typeid(vb6_ast::statements::callStmt));
-  CHECK(st[13].get().type() == typeid(vb6_ast::statements::callStmt));
-  CHECK(st[14].get().type() == typeid(vb6_ast::statements::raiseeventStmt));
+  REQUIRE(st.size() == 28);
+  CHECK(boost::get<vb6_ast::statements::assignStmt>(&st[0]));
+  CHECK(boost::get<vb6_ast::statements::assignStmt>(&st[1]));
+  CHECK(boost::get<vb6_ast::statements::assignStmt>(&st[2]));
+  CHECK(boost::get<vb6_ast::statements::assignStmt>(&st[3]));
+  CHECK(boost::get<vb6_ast::statements::localVarDeclStmt>(&st[4]));
+  CHECK(boost::get<vb6_ast::statements::localVarDeclStmt>(&st[5]));
+  CHECK(boost::get<vb6_ast::statements::redimStmt>(&st[6]));
+  CHECK(boost::get<vb6_ast::statements::exitStmt>(&st[7]));
+  CHECK(boost::get<vb6_ast::statements::gotoStmt>(&st[8]));
+  CHECK(boost::get<vb6_ast::statements::onerrorStmt>(&st[9]));
+  CHECK(boost::get<vb6_ast::statements::resumeStmt>(&st[10]));
+  CHECK(boost::get<vb6_ast::statements::labelStmt>(&st[11]));
+  CHECK(boost::get<vb6_ast::statements::callStmt>(&st[12]));
+  CHECK(boost::get<vb6_ast::statements::callStmt>(&st[13]));
+  CHECK(boost::get<vb6_ast::statements::raiseeventStmt>(&st[14]));
+  CHECK(boost::get<vb6_ast::empty_line>(&st[15]));
+  CHECK(boost::get<vb6_ast::lonely_comment>(&st[16]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::withStmt>>(&st[17]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::ifelseStmt>>(&st[18]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::whileStmt>>(&st[19]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::dowhileStmt>>(&st[20]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::dountilStmt>>(&st[21]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::loopwhileStmt>>(&st[22]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::loopuntilStmt>>(&st[23]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::doStmt>>(&st[24]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::forStmt>>(&st[25]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::selectStmt>>(&st[26]));
+  CHECK(boost::get<x3::forward_ast<vb6_ast::statements::foreachStmt>>(&st[27]));
 }
 
 TEST_CASE("With", "[vb6_parser_compound_statements]")
@@ -331,7 +355,7 @@ TEST_CASE("While", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   CHECK(tmp.func_name == "cond");
   CHECK(tmp.params.size() == 2);
   CHECK(st.block.size() == 1);
@@ -366,7 +390,7 @@ TEST_CASE("DoWhile", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   CHECK(tmp.func_name == "cond");
   CHECK(tmp.params.size() == 2);
   CHECK(st.block.size() == 1);
@@ -385,7 +409,7 @@ TEST_CASE("LoopWhile", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   CHECK(tmp.func_name == "cond");
   CHECK(tmp.params.size() == 2);
   CHECK(st.block.size() == 1);
@@ -404,7 +428,7 @@ TEST_CASE("DoUntil", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   CHECK(tmp.func_name == "cond");
   CHECK(tmp.params.size() == 2);
   CHECK(st.block.size() == 1);
@@ -423,7 +447,7 @@ TEST_CASE("LoopUntil", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition.get()).get();
+  auto& tmp = boost::get<x3::forward_ast<vb6_ast::func_call>>(st.condition).get();
   CHECK(tmp.func_name == "cond");
   CHECK(tmp.params.size() == 2);
   CHECK(st.block.size() == 1);
@@ -448,9 +472,9 @@ TEST_CASE("For", "[vb6_parser_compound_statements]")
   CHECK(!st.for_variable.ctx.leading_dot);
   CHECK(st.for_variable.ctx.elements.empty());
 
-  auto& tmp1 = boost::get<vb6_ast::const_expr>(st.from.get()).get();
-  auto& tmp2 = boost::get<vb6_ast::const_expr>(st.to.get()).get();
-  auto& tmp3 = boost::get<vb6_ast::const_expr>(st.step.get()).get();
+  auto& tmp1 = boost::get<vb6_ast::const_expr>(st.from.get());
+  auto& tmp2 = boost::get<vb6_ast::const_expr>(st.to.get());
+  auto& tmp3 = boost::get<vb6_ast::const_expr>(st.step.get());
 
   CHECK(boost::get<vb6_ast::integer_dec>(tmp1).val == 1);
   CHECK(boost::get<vb6_ast::integer_dec>(tmp2).val == 100);
@@ -476,7 +500,7 @@ TEST_CASE("ForEach", "[vb6_parser_compound_statements]")
   CHECK(!st.for_variable.ctx.leading_dot);
   CHECK(st.for_variable.ctx.elements.empty());
 
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(st.container.get());
+  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(st.container);
 
   CHECK(tmp1.ctx.elements.empty());
   CHECK(tmp1.var == "Items");
@@ -499,7 +523,7 @@ TEST_CASE("IfElse_substatements", "[vb6_parser_compound_statements]")
   REQUIRE(res);
     CHECK(sv.empty());
 
-    auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition.get());
+    auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast1.condition);
 
     CHECK(tmp1.var == "cond1");
     CHECK(ast1.block.size() == 3);
@@ -517,7 +541,7 @@ TEST_CASE("IfElse_substatements", "[vb6_parser_compound_statements]")
   REQUIRE(res);
     CHECK(sv.empty());
 
-    auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition.get());
+    auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast2.condition);
 
     CHECK(tmp2.var == "cond2");
     CHECK(ast2.block.size() == 3);
@@ -558,17 +582,17 @@ TEST_CASE("IfElse", "[vb6_parser_compound_statements]")
   CHECK(sv.empty());
 
   CHECK(ast.first_branch.block.size() == 1);
-  auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition.get());
+  auto& tmp0 = boost::get<vb6_ast::decorated_variable>(ast.first_branch.condition);
   CHECK(tmp0.var == "cond1");
 
   REQUIRE(ast.if_branches.size() == 2);
 
   CHECK(ast.if_branches[0].block.size() == 1);
-  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[0].condition.get());
+  auto& tmp1 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[0].condition);
   CHECK(tmp1.var == "cond2");
 
   CHECK(ast.if_branches[1].block.size() == 1);
-  auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition.get());
+  auto& tmp2 = boost::get<vb6_ast::decorated_variable>(ast.if_branches[1].condition);
   CHECK(tmp2.var == "cond3");
 
   REQUIRE(ast.else_branch.has_value());
@@ -596,23 +620,21 @@ TEST_CASE("Select", "[vb6_parser_compound_statements]")
   REQUIRE(res);
   CHECK(sv.empty());
 
-  REQUIRE(st.condition.get().type() == typeid(vb6_ast::decorated_variable));
-  CHECK(boost::get<vb6_ast::decorated_variable>(st.condition.get()).var == "Type");
+  REQUIRE(boost::get<vb6_ast::decorated_variable>(&st.condition));
+  CHECK(boost::get<vb6_ast::decorated_variable>(st.condition).var == "Type");
   CHECK(st.blocks.size() == 2);
 
-  REQUIRE(st.blocks[0].case_expr.get().type() == typeid(vb6_ast::const_expr));
+  REQUIRE(boost::get<vb6_ast::const_expr>(&st.blocks[0].case_expr));
   CHECK(boost::get<vb6_ast::integer_dec>(
-              boost::get<vb6_ast::const_expr>(st.blocks[0].case_expr.get()).get()
-            ).val == 0);
+              boost::get<vb6_ast::const_expr>(st.blocks[0].case_expr)).val == 0);
   REQUIRE(st.blocks[0].block.size() == 2);
-  CHECK(st.blocks[0].block[0].get().type() == typeid(vb6_ast::statements::localVarDeclStmt));
-  CHECK(st.blocks[0].block[1].get().type() == typeid(vb6_ast::statements::callStmt));
+  CHECK(boost::get<vb6_ast::statements::localVarDeclStmt>(&st.blocks[0].block[0]));
+  CHECK(boost::get<vb6_ast::statements::callStmt>(&st.blocks[0].block[1]));
 
-  REQUIRE(st.blocks[1].case_expr.get().type() == typeid(vb6_ast::const_expr));
+  REQUIRE(boost::get<vb6_ast::const_expr>(&st.blocks[1].case_expr));
   CHECK(boost::get<vb6_ast::integer_dec>(
-              boost::get<vb6_ast::const_expr>(st.blocks[1].case_expr.get()).get()
-            ).val == 1);
+              boost::get<vb6_ast::const_expr>(st.blocks[1].case_expr)).val == 1);
   REQUIRE(st.blocks[1].block.size() == 6);
-  CHECK(st.blocks[1].block[0].get().type() == typeid(vb6_ast::lonely_comment));
-  CHECK(st.blocks[1].block[1].get().type() == typeid(vb6_ast::statements::localVarDeclStmt));
+  CHECK(boost::get<vb6_ast::lonely_comment>(&st.blocks[1].block[0]));
+  CHECK(boost::get<vb6_ast::statements::localVarDeclStmt>(&st.blocks[1].block[1]));
 }
